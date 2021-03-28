@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="form">
+        <h2>Finish registration</h2>
+        <h3>На указанную почту выслано письмо с кодом, который нужно ввести в поле</h3>
+        <form action="" method="post" class="form" novalidate>
+            {{ form.hidden_tag() }}
+            {% for i in form if i.name != 'csrf_token' and i != form.submit %}
+                <div class="mb-3">
+                    {{ i.label }}<br>
+                    {% if i == form.password or i == form.rep_password %}
+                        {{ i(class="form-control", id="form-field", type="password") }}<br>
+                    {% else %}
+                        {{ i(class="form-control", id="form-field") }}<br>
+                    {% endif %}
+                    {% if alert != "" %}
+                        <div class="alert alert-danger" role="alert">
+                            <p>{{alert}}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        </form>
+    </div>
+{% endblock %}
