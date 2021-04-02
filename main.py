@@ -9,7 +9,8 @@ from flask import Flask, render_template, redirect, request
 from data import db_session
 from flask_login import LoginManager, login_required, logout_user
 from flask_login import login_user, current_user
-from data.forms import RegisterForm, FinishRegistration
+from data.dialog import Dialog
+from data.forms import RegisterForm, FinishRegistration, LoginForm
 from data.users import User
 from post_service.post_srv import send_mail
 
@@ -89,6 +90,28 @@ def finish(u_id):
 @app.route("/")
 def base():
     return render_template("base.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.shortname == form.shortname.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            return redirect("/")
+        return render_template('login.html',
+                               message="Incorrect login or password",
+                               form=form)
+    return render_template('login.html', title='Authorization', form=form)
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
 
 
 if __name__ == "__main__":

@@ -12,4 +12,5 @@ class Dialog(SqlAlchemyBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, autoincrement=True, primary_key=True)
     members = sqlalchemy.Column(sqlalchemy.String)
+    modified_date = sqlalchemy.Column(sqlalchemy.String, default=datetime.datetime.now)
     file = sqlalchemy.Column(sqlalchemy.String)
