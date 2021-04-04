@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container justify-content-center">
+    {% for i in dialogs %}
+        <div class="list-group">
+          <a href="/dialog/{{ i['id'] }}" class="list-group-item list-group-item-action" aria-current="true">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">{{ i['member'] }}</h5>
+              <small>Last message was at ...</small>
+            </div>
+            <p class="mb-1"></p>
+          </a>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}

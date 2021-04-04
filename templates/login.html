@@ -3,6 +3,7 @@
 {% block content %}
     <div id="form">
         <form action="" method="post" class="shadow form" novalidate>
+            {{ form.csrf_token }}
             {{ form.hidden_tag() }}
             <div class="mb-3">
                 <h2>Login</h2>
@@ -34,4 +35,10 @@
             {% endif %}
         </form>
     </div>
+    <script>
+        setInterval(function(){
+            $('#temp').load(document.URL +  ' #temp');
+            $('#hid').load(document.URL +  ' #hid');
+                              }, 1000)
+    </script>
 {% endblock %}

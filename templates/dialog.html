@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container justify-content-center" id="dialog">
+        <div class="row row-cols-auto justify-content-center" id="member-line">
+            <div class="col"><h3 id="mem"><a class="nav-btn">{{ member }}</a></h3></div>
+        </div>
+        <div data-bs-spy="scroll" data-bs-target="#navbar-example" data-bs-offset="0" class="scrollspy" id="scrl" tabindex="0">
+            <div class="d-flex justify-content-center" id="first-alert">
+                <h4>Dialog</h4>
+            </div>
+            {% for i in messages %}
+                {% if messages[i]["user"] == current_user.id %}
+                    <div class="d-flex justify-content-end">
+                      <p class="mb-2">{{ messages[i]["text"] }}</p>
+                    </div>
+                {% else %}
+                    <div class="d-flex justify-content-start">
+                      <p class="mb-2">{{ messages[i]["text"] }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <form action="" method="post" class="shadow input-line" id="input-line" novalidate>
+            {{ form.csrf_token }}
+            {{form.input_line(class="input-ln", id="input-ln", placeholder=form.input_line.label.text)}}
+            {{form.submit(type="submit", class="btn btn-primary", id="send")}}
+        </form>
+    </div>
+    <script>
+        scrl.scrollTop = scrl.scrollHeight;
+    </script>
+    <script>
+        setInterval(function()
+        {
+            $("#scrl").load(location.href+" #scrl>*","");
+        }, 1500)
+    </script>
+{% endblock %}

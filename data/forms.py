@@ -1,8 +1,8 @@
 import datetime
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, TextAreaField
 from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired, EqualTo, Email
+from wtforms.validators import DataRequired, EqualTo, Email, Length
 
 
 class RegisterForm(FlaskForm):
@@ -30,10 +30,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-class Message:
-    user = None
-    member = None
+class DialogForm(FlaskForm):
+    input_line = TextAreaField('Type your message there', validators=[DataRequired(), Length(min=1, max=500)])
+    submit = SubmitField('Send')
 
-    def __init__(self, user, member):
-        self.user = user
-        self.member = member
