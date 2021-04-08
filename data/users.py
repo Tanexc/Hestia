@@ -22,6 +22,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     last_seen = sqlalchemy.Column(sqlalchemy.DateTime)
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     confirmed = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    friends = sqlalchemy.Column(sqlalchemy.String, nullable=True, default="")
+    requests = sqlalchemy.Column(sqlalchemy.String, default="")
 
     def __repr__(self):
         return f"<Colonist> {self.id} {self.surname} {self.name}"

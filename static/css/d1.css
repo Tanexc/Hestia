@@ -156,7 +156,7 @@ div.scrollspy {
     border: 2px solid gray;
     border-radius: 10px;
     width: 100%;
-    margin: 3px 0px 0px 0px;
+    margin: 3px 0px 3px 0px;
     padding: 10px;
 }
 ::-webkit-scrollbar {
@@ -185,5 +185,67 @@ div.scrollspy {
 #send {
 	border-radius: 10px;
 	min-height: 50px;
+	margin: auto;
+}
+#friend-box {
+    position: relative;
+	margin-left: auto;
+    margin-right: auto;
+    border: 2px solid gray;
+    border-radius: 10px;
+    padding: 2px;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+#titles-col {
+    margin-bottom: 30px;
+}
+#search-ln {
+    width: 100%;
+	margin-right: 5px;
+	outline: none;
+	border-radius: 10px;
+    border: none;
+}
+.custom-a {
+    text-decoration: none;
+    color: #080706;
+}
+.custom-a:hover {
+    decoration: none;
+    color: #a0a0a0;
+}
+#dlg {
+    color: #50c878;
+}
+#dlg:hover {
+    color: #009900;
+}
+.new-dialog-btn{
+	border-radius: 10px;
+	border: none;
+	width: 100px;
+	height: 30px;
+	margin-bottom: 5px;
+    background-color: #50c878;
+}
+.new-dialog-btn:hover {
+    background-color: #009900;
+    text-color: #ffffff;
+}
+.new-dialog-btn a {
+	color: #000000;
+	text-decoration: none;
+}
+.new-dialog-btn:hover a {
+	color: #ffffff;
+	text-decoration: none;
+}
+.mb-3 {
+	color: #000000;
+	width: 200px;
 	margin: auto;
 }

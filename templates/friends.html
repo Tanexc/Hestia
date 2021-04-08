@@ -1,0 +1,27 @@
+{% extends "friends_base.html" %}
+
+{% block friendscontent %}
+    <div class="container justify-content-center" id="dialog">
+        <div class="row row-cols-auto justify-content-md-center" id="member-line">
+          <div class="col-5 justify-content-center"><h4>Name Surname</h4></div>
+          <div class="col-5 justify-content-center"><h4>Shortname</h4></div>
+        </div>
+        <div id="friend-box">
+            <ul class="list-group list-group-flush">
+                {% for i in friends %}
+                    <div class="list-group-item list-group-item-action" aria-current="true">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="container-lg">
+                              <div class="row row-cols-auto justify-content-md-center">
+                                <div class="col-5 justify-content-center"><a class="custom-a" href="/profile/{{i[1]}}">{{i[0]}}</a></div>
+                                <div class="col-4 justify-content-center"><a class="custom-a" href="/profile/{{i[1]}}">{{i[1]}}</a></div>
+                                <div class="col-1 justify-content-end"><a class="custom-a" id="dlg" href="/new_dialog/{{i[2]}}">Dialog</a></div>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

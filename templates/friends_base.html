@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-md" id="titles-col">
+          <div class="row row-cols-auto justify-content-md-center">
+            <div class="col"><a href="/friends" class="nav-btn">My friends</a></div>
+            <div class="col"><a href="/friends/search" class="nav-btn">Search</a></div>
+            <div class="col"><a href="/friends/requests" class="nav-btn">Requests</a></div>
+          </div>
+    </div>
+    {% block friendscontent %}
+    {% endblock %}
+{% endblock %}

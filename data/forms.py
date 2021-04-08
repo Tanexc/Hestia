@@ -8,7 +8,7 @@ from wtforms.validators import DataRequired, EqualTo, Email, Length
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     surname = StringField("Surname", validators=[DataRequired()])
-    address = StringField("Address")
+    address = StringField("Locality")
     email = StringField("Email", validators=[DataRequired(), Email()])
     shortname = StringField("Short name - login")
     password = StringField("Password", validators=[DataRequired()])
@@ -31,6 +31,13 @@ class LoginForm(FlaskForm):
 
 
 class DialogForm(FlaskForm):
-    input_line = TextAreaField('Type your message there', validators=[DataRequired(), Length(min=1, max=500)])
+    input_line = TextAreaField('Type your message there', validators=[DataRequired(),
+                                                                      Length(min=1,
+                                                                             max=500)])
     submit = SubmitField('Send')
 
+
+class SearchFriendForm(FlaskForm):
+    input_line = StringField("Type user's name, surname or shortname", validators=[DataRequired(),
+                                                                                     Length(min=1, max=30)])
+    submit = SubmitField('Search')

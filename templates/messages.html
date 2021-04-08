@@ -2,14 +2,22 @@
 
 {% block content %}
     <div class="container justify-content-center">
+        <div class="container-lg">
+              <div class="row justify-content-md-center">
+                  <div class="col-1"><button class="new-dialog-btn"><a href="/friends">New dialog</a></button></div>
+              </div>
+        </div>
     {% for i in dialogs %}
         <div class="list-group">
           <a href="/dialog/{{ i['id'] }}" class="list-group-item list-group-item-action" aria-current="true">
             <div class="d-flex w-100 justify-content-between">
               <h5 class="mb-1">{{ i['member'] }}</h5>
-              <small>Last message was at ...</small>
+              <small>Last message was at {{i["updated"]}}</small>
             </div>
-            <p class="mb-1"></p>
+            <div class="container-sm justify-content-center">
+              <p class="mb-3">{{i["last_message"]}}</p>
+            </div>
+
           </a>
         </div>
     {% endfor %}
