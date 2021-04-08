@@ -330,24 +330,5 @@ def make_request(user_id):
     return redirect("/friends/search")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     main()
