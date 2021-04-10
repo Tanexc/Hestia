@@ -102,19 +102,20 @@ def finish(u_id):
            f"Вы заполниои форму регистрации Hestia.\n" \
            f"Для завершения регистрации введите код.\n" \
            f"Супер индивидуальный код: {CODE}"
-    if send_mail(email, subject, text, []):
-        if form.validate_on_submit():
-            print("code" + form.code.data)
-            if CODE == str(form.code.data):
-                usr.confirmed = True
-                db_sess.commit()
+    if not usr.confirmed:
+        if send_mail(email, subject, text, []):
+            if form.validate_on_submit():
+                print("code" + form.code.data)
+                if CODE == str(form.code.data):
+                    usr.confirmed = True
+                    db_sess.commit()
+                    CODE = generate_code()
+                    return redirect("/")
+                else:
+                    alert = "Uncorrect code"
                 CODE = generate_code()
-                return redirect("/")
-            else:
-                alert = "Uncorrect code"
-            CODE = generate_code()
-    else:
-        alert = "Что то не так"
+        else:
+            alert = "Что то не так"
     return render_template("finish.html", form=form, title="Finish Registration", alert=alert)
 
 
