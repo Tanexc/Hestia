@@ -15,7 +15,18 @@
                               <div class="row row-cols-auto justify-content-md-center">
                                 <div class="col-5 justify-content-center"><a class="custom-a" href="/profile/{{i[1]}}">{{i[0]}}</a></div>
                                 <div class="col-4 justify-content-center"><a class="custom-a" href="/profile/{{i[1]}}">{{i[1]}}</a></div>
-                                <div class="col-1 justify-content-end"><a class="custom-a" id="dlg" href="/new_dialog/{{i[2]}}">Dialog</a></div>
+
+                                <div class="col-1 justify-content-end">
+                                    <div class="btn-group">
+                                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Interact
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="custom-a" id="dlg" href="/new_dialog/{{i[2]}}">Dialog</a></li>
+                                            <li><a class="custom-a" id="dlt" href="/friends/delete/{{i[2]}}">Discard</a></li>
+                                        </ul>
+                                    </div>
+                                    </div>
                               </div>
                             </div>
                         </div>

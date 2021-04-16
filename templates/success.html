@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-xxl justify-content-center">
+        <h2>Success!</h2>
+        <h3>{{message}}</h3>
+        {% if not current_user.is_authenticated %}
+        <button class="btn-login"><a href="/login" class="a">Sign in</a></button>
+        {% endif %}
+    </div>
+{% endblock %}

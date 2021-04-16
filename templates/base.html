@@ -1,6 +1,6 @@
 <html lang="en"><head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/css/d1.css">
+    <link rel="stylesheet" href="/static/css/d6.css">
     <script type='text/javascript' src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico')}}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -16,6 +16,18 @@
                 <div class="row justify-content-sm-end">
                     <div class="col col-sm-auto">
                         <button class="btn-logout"><a class="a" href="/logout">Logout</a></button>
+                    </div>
+                </div>
+                <div class="row justify-content-sm-end">
+                    <div class="col col-sm-auto">
+                        <div class="dropdown" id="settings-dropdown">
+                          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            Settings
+                          </button>
+                          <ul class="dropdown-menu" id="settings-ul" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="custom-a" href="/settings/change-password">Change password</a></li>
+                          </ul>
+                        </div>
                     </div>
                 </div>
             </div>

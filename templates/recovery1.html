@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="form">
+        <h2 id="finish-label">{{recovery_title}}</h2>
+        <h3 id="info-label">Введите почту, которая привязана к аккаунту</h3>
+        <form action="" method="post" class="form" novalidate>
+            {{ form.hidden_tag() }}
+            {{ form.email.label }}<br>
+            {{ form.email(class="form-control", id="form-field") }}<br>
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+            {% if alert != "" %}
+            <div class="alert alert-warning" role="alert">
+                {{ alert }}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+{% endblock %}

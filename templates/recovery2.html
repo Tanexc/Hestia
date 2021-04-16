@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="form">
+        <h2 id="finish-label">Recovery password</h2>
+        <h3 id="info-label">Введите код из письма, которое было отправлено на указанный адрес почты</h3>
+        <form action="" method="post" class="form" novalidate>
+            {{ form.hidden_tag() }}
+            {{ form.code.label }}<br>
+            {{ form.code(class="form-control", id="form-field") }}<br>
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+            {% if alert != "" %}
+            <div class="alert alert-warning" role="alert">
+                {{ alert }}
+            </div>
+            {% endif %}
+        </form>
+
+    </div>
+{% endblock %}

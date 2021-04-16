@@ -3,7 +3,7 @@
 {% block content %}
     <div class="container justify-content-center" id="dialog">
         <div class="row row-cols-auto justify-content-center" id="member-line">
-            <div class="col"><h3 id="mem"><a class="nav-btn" href="/profile/{{shortname}}">{{ member }}</a></h3></div>
+            <div class="col"><h3 id="mem"><a class="nav-btn" href="/profile/{{shortname}}">{{ member }}</a></h3><h5>{{last_seen}}</h5></div>
         </div>
         <div data-bs-spy="scroll" data-bs-target="#navbar-example" data-bs-offset="0" class="scrollspy" id="scrl" tabindex="0">
             <div class="d-flex justify-content-center" id="first-alert">
