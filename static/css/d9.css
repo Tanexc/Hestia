@@ -292,3 +292,6 @@ div.scrollspy {
 .alert {
     max-height: 50px;
 }
+.success-div {
+	display: flex;
+}

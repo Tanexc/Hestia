@@ -130,7 +130,6 @@ def finish(u_id):
     if not usr.confirmed:
         if send_mail(email, subject, text, []):
             if form.validate_on_submit():
-                print("code" + form.code.data)
                 if CODE == str(form.code.data):
                     usr.confirmed = True
                     db_sess.commit()
@@ -169,7 +168,7 @@ def login():
             return redirect(f"/home/{user.shortname}")
         return render_template('login.html',
                                message="Incorrect login or password",
-                               form=form)
+                               form=form, title='Authorization')
     return render_template('login.html', title='Authorization', form=form)
 
 
@@ -446,7 +445,7 @@ def recovery_code(email):
             return redirect(f"/recovery/new-password/{usr.shortname}")
         else:
             alert = "Неверный код"
-    return render_template("recovery2.html", form=form, alert=alert)
+    return render_template("recovery2.html", form=form, alert=alert, title="Recovery")
 
 
 # функция восстановления пароля ( 3 этап создание нового пароля )
@@ -463,7 +462,7 @@ def new_password(shortname):
             return redirect("/success/3")
         else:
             alert = "Заполните все поля!"
-    return render_template("recovery3.html", alert=alert, form=form)
+    return render_template("recovery3.html", alert=alert, title="Recovery", form=form)
 
 
 # функция смены пароля ( ввод старого пароля для подтверждения )
@@ -483,7 +482,7 @@ def change_password():
                 alert = "Wrong password!"
         else:
             alert = "Enter your password."
-    return render_template("change_password.html", form=form, alert=alert)
+    return render_template("change_password.html", form=form, title="Change password", alert=alert)
 
 
 # функция восстановления shortname
@@ -515,7 +514,7 @@ def forgot_shortname():
                            recovery_title="Recovery shortname")
 
 
-@app.route("/success/<int: mes_code>")
+@app.route("/success/<int:mes_code>")
 def success(mes_code):
     message = ""
     if mes_code == 1:

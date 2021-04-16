@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="container-xxl justify-content-center">
-        <h2>Success!</h2>
-        <h3>{{message}}</h3>
+    <div id="form" class="container-xxl justify-content-center">
+        <h2 id="finish-label">Success!</h2>
+        <h3 id="info-label">{{message}}</h3>
         {% if not current_user.is_authenticated %}
-        <button class="btn-login"><a href="/login" class="a">Sign in</a></button>
+        <div class="success-div justify-content-center">
+            <div class="empty-plug"></div>
+            <button class="btn-login"><a href="/login" class="a">Sign in</a></button>
+            <div class="empty-plug"></div>
+        </div>
         {% endif %}
     </div>
 {% endblock %}

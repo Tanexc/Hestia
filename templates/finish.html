@@ -2,8 +2,8 @@
 
 {% block content %}
     <div id="form">
-        <h2>Finish registration</h2>
-        <h3>На указанную почту выслано письмо с кодом, который нужно ввести в поле</h3>
+        <h2 id="finish-label">Finish registration</h2>
+        <h3 id="info-label">На указанную почту выслано письмо с кодом, который нужно ввести в поле</h3>
         <form action="" method="post" class="form" novalidate>
             {{ form.hidden_tag() }}
             {% for i in form if i.name != 'csrf_token' and i != form.submit %}
