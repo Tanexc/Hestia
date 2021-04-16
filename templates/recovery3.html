@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="form">
+        <h2 id="finish-label">New password</h2>
+        <h3 id="info-label">Введите новый пароль</h3>
+        <form action="" method="post" class="form" novalidate>
+            {{ form.hidden_tag() }}
+            {{ form.password.label }}<br>
+            {{ form.password(class="form-control", id="form-field", type="password") }}<br>
+            {% for error in form.password.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <p>{{error}}</p>
+                        </div>
+            {% endfor %}
+            {{ form.rep_password.label }}<br>
+            {{ form.rep_password(class="form-control", id="form-field", type="password") }}<br>
+            {% for error in form.rep_password.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <p>{{error}}</p>
+                        </div>
+                    {% endfor %}
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+            {% if alert != "" %}
+            <div class="alert alert-warning" role="alert">
+                {{ alert }}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+{% endblock %}

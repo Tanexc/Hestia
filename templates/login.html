@@ -26,6 +26,9 @@
                         </div>
                     {% endfor %}
                     {{ form.remember_me() }} {{ form.remember_me.label }}
+                    <a href="/recovery" id="recovery-psw">Forgot password</a><br>
+                    <a href="/recovery" id="recovery-shn">Forgot shortname</a><br>
+
                 </div>
             <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
             {% if message %}

@@ -1,17 +1,16 @@
 import datetime
 from random import choice as chs
-from flask_wtf import FlaskForm
 from sqlalchemy import or_
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField
-from wtforms.fields.html5 import EmailField
 from werkzeug.security import generate_password_hash
-from wtforms.validators import DataRequired, EqualTo, Email
 from flask import Flask, render_template, redirect, request
 from data import db_session
 from flask_login import LoginManager, login_required, logout_user
 from flask_login import login_user, current_user
 from data.dialog import Dialog
-from data.forms import RegisterForm, FinishRegistration, LoginForm, DialogForm, SearchFriendForm, password_warning
+from data.forms import RegisterForm, FinishRegistration
+from data.forms import LoginForm, DialogForm
+from data.forms import SearchFriendForm, FirstRecPswForm
+from data.forms import SecondRecPswForm, ThirdRecPswForm, ChangePswForm
 from data.users import User
 from post_service.post_srv import send_mail
 
@@ -48,7 +47,7 @@ CODE = generate_code()
 def get_last_message(dlg: Dialog):
     mes = ""
     try:
-        with open(f"{DIALOGS_DIR}{dlg.file}", "r") as f:
+        with open(f"{DIALOGS_DIR}{dlg.file}", "r", encoding="utf-8") as f:
             al = f.read().split(MESSAGE_SPECIAL_SYMBOL_1)
             print(al)
             mes = al[-2].split(MESSAGE_SPECIAL_SYMBOL_0)[1]
@@ -57,6 +56,24 @@ def get_last_message(dlg: Dialog):
     except Exception:
         pass
     return mes
+
+
+# функция проверки принадлежности пользователя к списку друзей или списку запросов
+def check_requests_friend(user):
+    if str(current_user.id) in user.requests:
+        return -1
+    elif str(current_user.id) in user.friends or str(user.id) in current_user.requests:
+        return 0
+    else:
+        return 1
+
+
+# функция обновляющаяя время последнего действия пользователя
+def update_time():
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    user.last_seen = datetime.datetime.now()
+    db_sess.commit()
 
 
 @login_manager.user_loader
@@ -73,7 +90,15 @@ def register():
     if form.validate_on_submit():
         new_user = User()
         if len(db_sess.query(User).filter(User.email == form.email.data).all()) != 0:
-            return render_template("register.html", form=form, title="Register", message="This email already in use")
+            return render_template("register.html",
+                                   form=form,
+                                   title="Register",
+                                   message="This email already in use. Please, choice other.")
+        elif len(db_sess.query(User).filter(User.shortname == form.shortname.data).all()) != 0:
+            return render_template("register.html",
+                                   form=form,
+                                   title="Register",
+                                   message="This shortname already in use. Please, choice other.")
         new_user.email = form.email.data
         new_user.address = form.address.data
         if form.shortname.data != "":
@@ -102,30 +127,31 @@ def finish(u_id):
            f"Вы заполниои форму регистрации Hestia.\n" \
            f"Для завершения регистрации введите код.\n" \
            f"Супер индивидуальный код: {CODE}"
-    if send_mail(email, subject, text, []):
-        if form.validate_on_submit():
-            print("code" + form.code.data)
-            if CODE == str(form.code.data):
-                usr.confirmed = True
-                db_sess.commit()
+    if not usr.confirmed:
+        if send_mail(email, subject, text, []):
+            if form.validate_on_submit():
+                print("code" + form.code.data)
+                if CODE == str(form.code.data):
+                    usr.confirmed = True
+                    db_sess.commit()
+                    CODE = generate_code()
+                    return redirect("/success/2")
+                else:
+                    alert = "Uncorrect code"
                 CODE = generate_code()
-                return redirect("/")
-            else:
-                alert = "Uncorrect code"
-            CODE = generate_code()
-    else:
-        alert = "Что то не так"
+        else:
+            alert = "Что то не так"
     return render_template("finish.html", form=form, title="Finish Registration", alert=alert)
 
 
 # главная страница социальной сети
 @app.route("/")
 def base():
-    return render_template("base.html", title="Hestia")
+    return render_template("welcome.html", title="Hestia")
 
 
 # главная страница пользователя социальной сети
-@app.route("/<shortname>")
+@app.route("/home/<shortname>")
 def logined(shortname):
     return render_template("base.html", title="My profile")
 
@@ -139,7 +165,8 @@ def login():
         user = db_sess.query(User).filter(User.shortname == form.shortname.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
-            return redirect(f"/{user.shortname}")
+            update_time()
+            return redirect(f"/home/{user.shortname}")
         return render_template('login.html',
                                message="Incorrect login or password",
                                form=form)
@@ -149,6 +176,7 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+    update_time()
     logout_user()
     return redirect("/")
 
@@ -158,18 +186,19 @@ def logout():
 @login_required
 def messages():
     db_sess = db_session.create_session()
+    update_time()
     dialogs = db_sess.query(Dialog).filter(Dialog.members.like(f"%{current_user.id}%")).all()
     dialog_objects = []
-    for d in dialogs:
-        member = int(d.members.split(";")[0])
+    for dialog in dialogs:
+        member = int(dialog.members.split(";")[0])
         if member == current_user.id:
-            member = int(d.members.split(";")[1])
+            member = int(dialog.members.split(";")[1])
         mem_obj = db_sess.query(User).filter(User.id == member).all()[0]
-        last_message = get_last_message(d)
+        last_message = get_last_message(dialog)
         print(last_message)
         dialog_objects.append({"member": mem_obj.name + " " + mem_obj.surname,
-                               "id": d.id,
-                               "updated": d.modified_date,
+                               "id": dialog.id,
+                               "updated": dialog.modified_date,
                                "last_message": last_message})
     return render_template("messages.html", dialogs=dialog_objects, title="Messages")
 
@@ -178,23 +207,28 @@ def messages():
 @app.route("/dialog/<dlg_id>", methods=["POST", "GET"])
 @login_required
 def dialog(dlg_id):
+    update_time()
     form = DialogForm()
     dlg_mes = {}
     db_sess = db_session.create_session()
-    q = db_sess.query(Dialog).filter(Dialog.id == dlg_id).first()
-    member = int(q.members.split(";")[0])
+    dialog = db_sess.query(Dialog).filter(Dialog.id == dlg_id).first()
+    member = int(dialog.members.split(";")[0])
     if member == current_user.id:
-        member = int(q.members.split(";")[1])
+        member = int(dialog.members.split(";")[1])
     user = db_sess.query(User).filter(User.id == member).first()
     member = user.name + " " + user.surname
     shortname = user.shortname
-    dlg_file = q.file
+    last_seen = f"last action at {str(user.last_seen)[:-10]}"
+    print(user.last_seen)
+    dlg_file = dialog.file
     if request.method == "POST":
         if form.validate_on_submit():
             with open(f"{DIALOGS_DIR}{dlg_file}", "a+", encoding="utf-8") as dlg:
-                dlg.write(f"{current_user.id}{MESSAGE_SPECIAL_SYMBOL_0}{form.input_line.data}{MESSAGE_SPECIAL_SYMBOL_1}")
+                dlg.write(f"{current_user.id}{MESSAGE_SPECIAL_SYMBOL_0}"
+                          f"{form.input_line.data}{MESSAGE_SPECIAL_SYMBOL_1}")
             form.input_line.data = ""
-            q.modified_date = datetime.datetime.now()
+            dialog.modified_date = datetime.datetime.now()
+            db_sess.commit()
     with open(f"{DIALOGS_DIR}{dlg_file}", "r", encoding="utf-8") as dlg:
         m = dlg.read().split(MESSAGE_SPECIAL_SYMBOL_1)
         try:
@@ -208,25 +242,27 @@ def dialog(dlg_id):
                            member=member,
                            form=form,
                            title=f"Dialog with {member}",
-                           shortname=shortname)
+                           shortname=shortname,
+                           last_seen=last_seen)
 
 
 # функция открывающаяя страницу со списком друзей пользователя
 @app.route("/friends")
 @login_required
 def friends():
+    update_time()
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == current_user.id).first()
     friends = []
     try:
-        print("hr")
         friends = user.friends.split(";")
-        print(friends)
+        friends = list(filter(lambda x: x != "", friends))
         friends = list(map(lambda x: [db_sess.query(User).filter(User.id == int(x)).first().name
                                      + " "
                                      + db_sess.query(User).filter(User.id == int(x)).first().surname,
                                       db_sess.query(User).filter(User.id == int(x)).first().shortname,
-                                      db_sess.query(User).filter(User.id == int(x)).first().id], friends))
+                                      db_sess.query(User).filter(User.id == int(x)).first().id],
+                           friends))
     except Exception:
         pass
     return render_template("friends.html", friends=friends, title="Friends")
@@ -236,34 +272,46 @@ def friends():
 @app.route("/friends/search", methods=["POST", "GET"])
 @login_required
 def search():
+    update_time()
     db_sess = db_session.create_session()
     cu = db_sess.query(User).filter(User.id == current_user.id).first()
     form = SearchFriendForm()
+    in_ln = form.input_line.data
     if form.validate_on_submit():
-        searched_users = db_sess.query(User).filter(or_(User.shortname.like(f"%{form.input_line.data}%"),
+        searched_users = db_sess.query(User).filter(or_(User.shortname.like(f"%"
+                                                                            f"{in_ln}"
+                                                                            f"%"),
                                                         User.name.like(f"%{form.input_line.data}%"),
-                                                        User.surname.like(f"%{form.input_line.data}%"))).all()
+                                                        User.surname.like(f"%{form.input_line.data}"
+                                                                          f"%"))).all()
 
         searched_users = list(map(lambda x: [x.name + " " + x.surname,
                                              x.shortname,
                                              x.id,
-                                             1 if x.id != current_user.id
-                                                      or (str(x.id) not in cu.friends
-                                                          and str(x.id) not in cu.request) else 0],
+                                             check_requests_friend(x)],
                                   searched_users))
     else:
         searched_users = db_sess.query(User).filter().all()
-        searched_users = list(map(lambda x: [x.name + " " + x.surname, x.shortname, x.id], searched_users))
-    return render_template("search_friends.html", title="Searching Friends", searched_users=searched_users, form=form)
+        searched_users = list(map(lambda x: [x.name + " " + x.surname,
+                                             x.shortname,
+                                             x.id,
+                                             check_requests_friend(x)],
+                                  searched_users))
+    return render_template("search_friends.html",
+                           title="Searching Friends",
+                           searched_users=searched_users,
+                           form=form)
 
 
 # функция создающаяя диалог с пользователем
 @app.route("/new_dialog/<int:member_id>")
 @login_required
 def new_dialog(member_id):
+    update_time()
     db_sess = db_session.create_session()
     q = db_sess.query(Dialog).filter(or_(Dialog.members == f"{current_user.id};{member_id}",
-                                         Dialog.members == f"{member_id};{current_user.id}")).first()
+                                         Dialog.members == f"{member_id};{current_user.id}"
+                                                           f"")).first()
     if q:
         return redirect(f"/dialog/{q.id}")
     else:
@@ -279,10 +327,11 @@ def new_dialog(member_id):
         return redirect(f"/dialog/{dlg.id}")
 
 
-# функция открывающаяя страницу с запросами в друзья
+# функция открывающая страницу с запросами в друзья
 @app.route("/friends/requests", methods=["GET", "POST"])
 @login_required
 def requests():
+    update_time()
     db_sess = db_session.create_session()
     message = ""
     req = []
@@ -298,6 +347,7 @@ def requests():
 @app.route("/addfriend/<int:user_id>")
 @login_required
 def add_friend(user_id):
+    update_time()
     req = current_user.requests.split(";")
     if str(user_id) in req:
         del req[req.index(str(user_id))]
@@ -309,7 +359,6 @@ def add_friend(user_id):
             user.friends = f"{current_user.id}"
         cu = db_sess.query(User).filter(User.id == current_user.id).first()
         if cu.friends:
-            print("dada")
             cu.friends = cu.friends + f";{user_id}"
         else:
             cu.friends = f"{user_id}"
@@ -323,11 +372,159 @@ def add_friend(user_id):
 @app.route("/friends/makerequest/<int:user_id>")
 @login_required
 def make_request(user_id):
+    update_time()
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == user_id).first()
-    user.requests = user.requests + f";{current_user.id}"
+    req = user.requests.split(";")
+    if str(current_user.id) not in user.requests:
+        req.append(f"{current_user.id}")
+    user.requests = ";".join(req)
     db_sess.commit()
     return redirect("/friends/search")
+
+
+# функция удаления пользователя из списка друзей
+@app.route("/friends/delete/<user_id>", methods=["GET"])
+@login_required
+def delete(user_id):
+    update_time()
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    friends_list = current_user.friends.split(";")
+    if str(user_id) in friends_list:
+        del friends_list[friends_list.index(str(user_id))]
+        user.friends = ";".join(friends_list)
+    user2 = db_sess.query(User).filter(User.id == user_id).first()
+    friends_list2 = user2.friends.split(";")
+    if str(current_user.id) in friends_list2:
+        del friends_list2[friends_list2.index(str(current_user.id))]
+        user2.friends = ";".join(friends_list2)
+    db_sess.commit()
+    return redirect("/friends")
+
+
+# функция восстановления пароля ( 1 этап ввод почты пользователя )
+@app.route("/recovery", methods=["POST", "GET"])
+def forgot_password():
+    global CODE
+    db_sess = db_session.create_session()
+    form = FirstRecPswForm()
+    alert = ""
+    usr = False
+    if form.validate_on_submit():
+        try:
+            usr = db_sess.query(User).filter(User.email == form.email.data).first()
+            subject = "Смена пароля аккаунта"
+            text = f"Здравствуйте, {usr.name}!\n" \
+                   f"Код для смены пароля: {CODE}.\n" \
+                   f"Если Вы не хотите менять пароль, просто проигнорируйте это сообщение."
+            send_mail(usr.email, subject, text, [])
+            return redirect(f"/recovery/code/{form.email.data}")
+        except:
+            if not usr:
+                alert = f"Нет пользователя с почтой {form.email.data}"
+            else:
+                alert = f"Неполадки в работе сервера. Попробуйте снова"
+    return render_template("recovery1.html",
+                           form=form,
+                           alert=alert,
+                           title="Recovery",
+                           recovery_title="Recovery password")
+
+
+# функция восстановления пароля ( 2 этап ввод кода из сообщения )
+@app.route("/recovery/code/<email>", methods=["POST", "GET"])
+def recovery_code(email):
+    global CODE
+    db_sess = db_session.create_session()
+    form = SecondRecPswForm()
+    alert = ""
+    usr = db_sess.query(User).filter(User.email == email).first()
+    if form.validate_on_submit():
+        if str(form.code.data) == CODE:
+            CODE = generate_code()
+            return redirect(f"/recovery/new-password/{usr.shortname}")
+        else:
+            alert = "Неверный код"
+    return render_template("recovery2.html", form=form, alert=alert)
+
+
+# функция восстановления пароля ( 3 этап создание нового пароля )
+@app.route("/recovery/new-password/<shortname>", methods=["POST", "GET"])
+def new_password(shortname):
+    db_sess = db_session.create_session()
+    form = ThirdRecPswForm()
+    alert = ""
+    usr = db_sess.query(User).filter(User.shortname == shortname).first()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            usr.hashed_password = generate_password_hash(form.password.data)
+            db_sess.commit()
+            return redirect("/success/3")
+        else:
+            alert = "Заполните все поля!"
+    return render_template("recovery3.html", alert=alert, form=form)
+
+
+# функция смены пароля ( ввод старого пароля для подтверждения )
+# далее переадресация на 3 этап воссстановления пароля
+@app.route("/settings/change-password",  methods=["POST", "GET"])
+@login_required
+def change_password():
+    db_sess = db_session.create_session()
+    form = ChangePswForm()
+    alert = ""
+    usr = db_sess.query(User).filter(User.id == current_user.id).first()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            if usr.check_password(form.password.data):
+                return redirect(f"/recovery/new-password/{usr.shortname}")
+            else:
+                alert = "Wrong password!"
+        else:
+            alert = "Enter your password."
+    return render_template("change_password.html", form=form, alert=alert)
+
+
+# функция восстановления shortname
+@app.route("/recovery/shortname", methods=["POST", "GET"])
+def forgot_shortname():
+    global CODE
+    db_sess = db_session.create_session()
+    form = FirstRecPswForm()
+    alert = ""
+    usr = False
+    if form.validate_on_submit():
+        try:
+            usr = db_sess.query(User).filter(User.email == form.email.data).first()
+            subject = "Восстановление аккаунта"
+            text = f"Здравствуйте, {usr.name}!\n" \
+                   f"Ваш shortname: {usr.shortname}\n" \
+                   f"Используйте его для входа в аккаунт и не забывайте его."
+            send_mail(usr.email, subject, text, [])
+            return redirect(f"/success/1")
+        except:
+            if not usr:
+                alert = f"Нет пользователя с почтой {form.email.data}"
+            else:
+                alert = f"Неполадки в работе сервера. Попробуйте снова"
+    return render_template("recovery1.html",
+                           form=form,
+                           alert=alert,
+                           title="Recovery",
+                           recovery_title="Recovery shortname")
+
+
+@app.route("/success/<int: mes_code>")
+def success(mes_code):
+    message = ""
+    if mes_code == 1:
+        message = "Ожидайте от нас письма с вашим shortname. Скорее всего оно уже пришло."
+    elif mes_code == 2:
+        message = "Вы зарегистрированы в Hestia!"
+    elif mes_code == 3:
+        message = "Данные аккаунта обновлены."
+    return render_template("success.html", message=message)
 
 
 if __name__ == "__main__":

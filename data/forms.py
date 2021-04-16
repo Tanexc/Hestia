@@ -1,6 +1,9 @@
 import datetime
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, TextAreaField
+from wtforms import BooleanField, SubmitField
+from wtforms import StringField, PasswordField
+from wtforms import IntegerField, TextAreaField
+from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, EqualTo, Email, Length, ValidationError
 
 
@@ -70,6 +73,31 @@ class DialogForm(FlaskForm):
 
 
 class SearchFriendForm(FlaskForm):
-    input_line = StringField("Type user's name, surname or shortname", validators=[DataRequired(),
-                                                                                     Length(min=1, max=30)])
+    input_line = StringField("Type user's name, surname or shortname",
+                             validators=[DataRequired(),
+                                         Length(min=1, max=30)])
     submit = SubmitField('Search')
+
+
+class FirstRecPswForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Submit")
+
+
+class SecondRecPswForm(FlaskForm):
+    code = StringField("Code", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
+class ThirdRecPswForm(FlaskForm):
+    password = StringField("Password", validators=[DataRequired()])
+    rep_password = StringField("Repeat password",
+                               validators=[DataRequired(),
+                                           EqualTo('password',
+                                                   message="Passwords must match")])
+    submit = SubmitField("Submit")
+
+
+class ChangePswForm(FlaskForm):
+    password = StringField("Password", validators=[DataRequired()])
+    submit = SubmitField("Submit")
