@@ -224,6 +224,12 @@ div.scrollspy {
 #dlg:hover {
     color: #009900;
 }
+#dlt {
+    color: #ff0000;
+}
+#dlt:hover {
+    color: #cc0000;
+}
 .new-dialog-btn{
 	border-radius: 10px;
 	border: none;
@@ -248,4 +254,41 @@ div.scrollspy {
 	color: #000000;
 	width: 200px;
 	margin: auto;
+}
+.con {
+	margin-right: 15px;
+}
+#finish-label {
+	text-align: center;
+}
+#info-label {
+	text-align: center;
+}
+#mem {
+    text-align: center;
+}
+#settings-dropdown {
+	height: 30px;
+	outline: none;
+}
+#dropdownMenuButton1 {
+	background-color: #3db766;
+	border: none;
+	color: #000000;
+	max-width: 90px;
+    margin-right: 20px;
+    outline: ;
+    max-height: 30px;
+}
+#dropdownMenuButton1:hover {
+	background-color: #50c878;
+}
+#req-sent {
+    color: #42aaff;
+}
+#req-sent:hover {
+    color: #75c1ff;
+}
+.alert {
+    max-height: 50px;
 }

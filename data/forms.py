@@ -1,17 +1,49 @@
 import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, TextAreaField
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired, EqualTo, Email, Length
+from wtforms.validators import DataRequired, EqualTo, Email, Length, ValidationError
+
+
+illegal_symbols = {"!", "/", "|", "("
+                       "+", "=", "@", ">"
+                       "№", "`", "'", "<"
+                       '"', ";", ",", "."
+                       "\\", "{", "}", ")"
+                       "[", "]", "*", " "
+                       "^", ":", "%", "&"
+                       "$", "#", "?", }
+
+illegal_passwords_parts = [
+                    "1234", "zxc", "asdf",
+                    "qwert", "0000", "3333",
+                    "apple", "1111", "2222",
+                    "pass", "сложн", "админ",
+                    "word", "admin", "пароль"
+]
+
+
+def Shortname_validate(form, field):
+    if len(list(illegal_symbols & set(list(field.data)))) != 0:
+        raise ValidationError("Use only letters, numbers and symbols '_',  '-'")
+
+
+def Password_validate(form, field):
+    password = field.data
+    if len(password) < 8:
+        raise ValidationError("Password must be at least 8 characters long")
+    elif password.isalpha() and (password.islower() or password.isupper()) or password.isdigit():
+        raise ValidationError("Use upper and lower letters, digits and other symbols")
+    elif len(list(filter(lambda x: x in password.lower(), illegal_passwords_parts))) != 0:
+        raise ValidationError("Simple password")
 
 
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     surname = StringField("Surname", validators=[DataRequired()])
-    address = StringField("Locality")
+    address = StringField("Locality*")
     email = StringField("Email", validators=[DataRequired(), Email()])
-    shortname = StringField("Short name - login")
-    password = StringField("Password", validators=[DataRequired()])
+    shortname = StringField("Short name - login", validators=[DataRequired(), Shortname_validate])
+    password = StringField("Password", validators=[DataRequired(), Password_validate])
     rep_password = StringField("Repeat password", validators=[DataRequired(),
                                                               EqualTo('password',
                                message="Passwords must match")])

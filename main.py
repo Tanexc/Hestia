@@ -11,7 +11,7 @@ from data import db_session
 from flask_login import LoginManager, login_required, logout_user
 from flask_login import login_user, current_user
 from data.dialog import Dialog
-from data.forms import RegisterForm, FinishRegistration, LoginForm, DialogForm, SearchFriendForm
+from data.forms import RegisterForm, FinishRegistration, LoginForm, DialogForm, SearchFriendForm, password_warning
 from data.users import User
 from post_service.post_srv import send_mail
 
