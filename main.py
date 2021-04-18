@@ -22,7 +22,7 @@ login_manager.init_app(app)
 MESSAGE_SPECIAL_SYMBOL_0 = "&&#/*/*/#&&"
 MESSAGE_SPECIAL_SYMBOL_1 = "&~&end*mes&~&"
 DIALOGS_DIR = "db/dialogs/"
-USER_IMG_DIR = "user_images"
+USER_IMG_DIR = "db/user_images/"
 
 
 # функция запуска приложения
@@ -107,7 +107,6 @@ def register():
             new_user.shortname = form.shortname.data
         new_user.name = form.name.data
         new_user.surname = form.surname.data
-        os.mkdir(f"photo/{new_user.shortname}")
         new_user.hashed_password = generate_password_hash(form.password.data)
         db_sess.add(new_user)
         db_sess.commit()
@@ -529,7 +528,7 @@ def success(mes_code):
     return render_template("success.html", message=message)
 
 
-@app.route("/me/<id>", methods=["POST", "GET"])
+@app.route("/profile/<int:id>", methods=["POST", "GET"])
 def me(id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == id).first()
@@ -538,14 +537,8 @@ def me(id):
     shortname = user.shortname
     address = user.address
     date = user.modified_date.date()
-    f = [1, 2, 4]
-    f1 = []
-    for i in f:
-        w = db_sess.query(User).filter(User.id == i).first()
-        f1.append([w.name, f"/me/{w.id}"])
-    path = f"{USER_IMG_DIR}/{user.photo_path}/{user.avatar_id}"
     return render_template("me.html", name=name, surname=surname, shortname=shortname,
-                           address=address, path=path, date=date, id=id)
+                           address=address, date=date, id=id, title="Profile")
 
 
 @app.route("/correction", methods=["POST", "GET"])
