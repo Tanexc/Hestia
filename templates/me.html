@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title%}
+{{shortname}}
+{% endblock %}
+{% block content %}
+    <div class="me">
+        <img src="{{url_for('db', filename=path)}}" align="left" width="200" height="200" hspace="20" vspace="20">
+        <div class="info">
+            <h1>{{name}} {{surname}}</h1><br>
+            <h4>About me</h4>
+            <div>я</div>
+            <h4>Registration date</h4>
+            <div>{{date}}</div>
+            <h4>Address</h4>
+            <div>{{address}}</div>
+            {% if id == current_user.id %}
+                <h4 class="col r"><a href="/correction" class="nav-btn">Correction</a></h4>
+                <div class="form-group">
+                    <label for="photo">Загрузить фото</label>
+                    <input type="image" class="form-control-file" id="photo" name="file">
+                </div>
+            {% endif %}
+        </div>
+        <div class="friends">
+            <h4>Friends</h4>
+            {% for i in friends %}
+                <div class="col"><a href={{i[1]}} class="nav-btn">{{i[0]}}</a></div>
+            {% endfor %}
+        </div>
+        <div class="photo">
+            {% for i in photo %}
+                <img src=i align="left" width="100" height="100" hspace="20" vspace="20">
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        scrl.scrollTop = scrl.scrollHeight;
+    </script>
+    <script>
+        setInterval(function()
+        {
+            $("#scrl").load(location.href+" #scrl>*","");
+        }, 1500)
+    </script>
+{% endblock %}
