@@ -22,11 +22,12 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     last_seen = sqlalchemy.Column(sqlalchemy.DateTime)
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     confirmed = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    avatar_id = sqlalchemy.Column(sqlalchemy.Integer)
     friends = sqlalchemy.Column(sqlalchemy.String, nullable=True, default="")
     requests = sqlalchemy.Column(sqlalchemy.String, default="")
 
     def __repr__(self):
-        return f"<Colonist> {self.id} {self.surname} {self.name}"
+        return f"<User> {self.id} {self.surname} {self.name} {self.shortname}"
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)

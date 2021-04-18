@@ -1,6 +1,7 @@
 import datetime
 from random import choice as chs
 from sqlalchemy import or_
+import os
 from werkzeug.security import generate_password_hash
 from flask import Flask, render_template, redirect, request
 from data import db_session
@@ -21,6 +22,7 @@ login_manager.init_app(app)
 MESSAGE_SPECIAL_SYMBOL_0 = "&&#/*/*/#&&"
 MESSAGE_SPECIAL_SYMBOL_1 = "&~&end*mes&~&"
 DIALOGS_DIR = "db/dialogs/"
+USER_IMG_DIR = "user_images"
 
 
 # функция запуска приложения
@@ -105,6 +107,7 @@ def register():
             new_user.shortname = form.shortname.data
         new_user.name = form.name.data
         new_user.surname = form.surname.data
+        os.mkdir(f"photo/{new_user.shortname}")
         new_user.hashed_password = generate_password_hash(form.password.data)
         db_sess.add(new_user)
         db_sess.commit()
@@ -524,6 +527,42 @@ def success(mes_code):
     elif mes_code == 3:
         message = "Данные аккаунта обновлены."
     return render_template("success.html", message=message)
+
+
+@app.route("/me/<id>", methods=["POST", "GET"])
+def me(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == id).first()
+    name = user.name
+    surname = user.surname
+    shortname = user.shortname
+    address = user.address
+    date = user.modified_date.date()
+    f = [1, 2, 4]
+    f1 = []
+    for i in f:
+        w = db_sess.query(User).filter(User.id == i).first()
+        f1.append([w.name, f"/me/{w.id}"])
+    path = f"{USER_IMG_DIR}/{user.photo_path}/{user.avatar_id}"
+    return render_template("me.html", name=name, surname=surname, shortname=shortname,
+                           address=address, path=path, date=date, id=id)
+
+
+@app.route("/correction", methods=["POST", "GET"])
+def correction():
+    form = RegisterForm()
+    db_sess = db_session.create_session()
+    if form.validate_on_submit():
+        user = db_sess.query(User).filter(User.id == id).first()
+        if len(db_sess.query(User).filter(User.email == form.email.data).all()) != 0:
+            return render_template("register.html", form=form, title="Register", message="This email already in use")
+        user.address = form.address.data
+        user.name = form.name.data
+        user.surname = form.surname.data
+        db_sess.add(user)
+        db_sess.commit()
+        return redirect(f"/me/{user.id}")
+    return render_template("register.html", form=form, title="Register")
 
 
 if __name__ == "__main__":
