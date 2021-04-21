@@ -3,7 +3,7 @@ from random import choice as chs
 from sqlalchemy import or_
 from werkzeug.security import generate_password_hash
 from flask import Flask, render_template, redirect, request
-from data import db_session
+from data import db_session, user_resource
 from flask_login import LoginManager, login_required, logout_user
 from flask_login import login_user, current_user
 from data.dialog import Dialog
@@ -13,14 +13,23 @@ from data.forms import SearchFriendForm, FirstRecPswForm
 from data.forms import SecondRecPswForm, ThirdRecPswForm, ChangePswForm
 from data.users import User
 from post_service.post_srv import send_mail
+from flask_restful import reqparse, abort, Api, Resource
+
+
+MESSAGE_SPECIAL_SYMBOL_0 = "&&#/*/*/#&&"
+MESSAGE_SPECIAL_SYMBOL_1 = "&~&end*mes&~&"
+DIALOGS_DIR = "db/dialogs/"
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "super_secret_key_QWav43sd-svs3-001a"
 login_manager = LoginManager()
 login_manager.init_app(app)
-MESSAGE_SPECIAL_SYMBOL_0 = "&&#/*/*/#&&"
-MESSAGE_SPECIAL_SYMBOL_1 = "&~&end*mes&~&"
-DIALOGS_DIR = "db/dialogs/"
+
+api = Api(app)
+api.add_resource(user_resource.UsersListResource, "/api/users")
+api.add_resource(user_resource.UsersResource, "/api/users/<int:user_id>")
+api.add_resource(user_resource.UsersListResource, "/api/dialogs")
+api.add_resource(user_resource.UsersResource, "/api/users/<int:dialog_id>")
 
 
 # функция запуска приложения

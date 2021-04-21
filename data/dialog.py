@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 from .db_session import SqlAlchemyBase
 
 
-class Dialog(SqlAlchemyBase):
+class Dialog(SqlAlchemyBase, SerializerMixin):
     __tablename__ = "dialogs"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, autoincrement=True, primary_key=True)
