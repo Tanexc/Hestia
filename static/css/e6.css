@@ -16,7 +16,7 @@ header {
 .row {
     align: center;
 }
-.container-fluid {
+#panel {
     position: absolute;
     bottom: 0px;
 }
@@ -294,4 +294,40 @@ div.scrollspy {
 }
 .success-div {
 	display: flex;
+}
+#base-navbar {
+	background-color: #0000;
+}
+#navbarDarkDropdownMenuLink {
+	color: #000000;
+}
+#navbarDarkDropdownMenuLink:hover {
+	color: #ffffff;
+}
+#settings-items {
+	min-width: 150px;
+	margin-right: 15px;
+	padding: 0px;
+}
+#navbar-items {
+	background: #50c878;
+	min-width: 150px;
+	margin-right: 18px;
+	top: -3px;
+	padding: 0px;
+	border: none;
+	box-shadow: 0em 0.4em 10px #2222;
+}
+#logout-a:hover {
+    color: #aa2222;
+}
+#base-navbar:hover {
+	box-shadow: 0em 0.5em 10px #2222;
+	background-color: #0000;
+}
+#base-navbar:focus {
+	box-shadow: 0em 0.5em 10px #2222;
+}
+#base-navbar:active {
+	box-shadow: 0em 0.5em 10px #2222;
 }

@@ -526,5 +526,10 @@ def success(mes_code):
     return render_template("success.html", message=message)
 
 
+@app.route("/da")
+def su():
+    return render_template("testbase.html")
+
+
 if __name__ == "__main__":
     main()
