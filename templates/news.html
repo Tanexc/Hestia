@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container justify-content-end" id="news">
+    <div class="container-lg">
+        <div class="row justify-content-md-center">
+            <h1 align="center">News</h1>
+            {% if current_user.is_authenticated %}
+                <div align="center"><button class="new-dialog-btn"><a href="/add_news">New news</a></button></div>
+            {% endif %}
+        </div>
+    </div>
+    {% for item in news%}
+        <div class="card">
+            <h5 class="card-header">{{item.title}}</h5>
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="/profile/{{item.user.shortname}}" class="nav-btn">{{item.user.name}}</a>
+                    {{item.date}} {{item.time}}
+                </h5>
+                <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                {% if current_user.is_authenticated and current_user == item.user %}
+                    <div class="d-flex w-100 justify-content-flex-end">
+                        <a href="/edit_news/{{ item.id }}" class="btn btn-warning">
+                            Изменить
+                        </a>
+                        <a href="/del_news/{{ item.id }}" class="btn btn-danger">
+                            Удалить
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

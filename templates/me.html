@@ -1,60 +1,57 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="container justify-content-end" id="dialog">
-        <div id="profile-box">
-            <div class="container">
-                <div class="row">
-                <div class="col-sm-5">
-                    <div class="card" style="width: 18rem;">
-                        {% set ava = url_for('static', filename="{{avatar}}")%}
-                        <img src="ht's.png" class="card-img-top">
-                        {% if user.shortname == current_user.shortname %}
-                            <form class="formp" method="post" enctype=multipart/form-data>
-                                <input type="file" accept="image/jpeg,image/png,image/bmp" value="Загрузить" name="upload">
-                                <button type="submit" class="btn btn-primary">Send</button>
-                            </form>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="info col-sm">
-                    <h1>{{user.name}} {{user.surname}}</h1><br>
-                    <h4>About me</h4>
-                    <div>яwgedfged</div>
-                    <h4>Registration date</h4>
-                    <div>{{date}}</div>
-                    <h4>Address</h4>
-                    <div>{{user.address}}</div>
-                </div>
-              </div>
-            </div>
-            <div class="container-sm" id="avatar-div" align="left">
-
-
-            </div>
-
-            <div class="info">
-                <h4>Friends</h4>
-                <ul>
-                    {% if len_friends <= 5%}
-                        {% for i in friends%}
-                            <li><a href="/profile/{{i.shortname}}" class="nav-btn">{{i.name}}</a></li>
-                        {% endfor %}
-                    {% else %}
-                        {% for i in range(5)%}
-                            <li><a href="/profile/{{friends[i].shortname}}" class="nav-btn">{{friends[i].name}}</a></li>
-                        {% endfor %}
-                        <a href="/profile/friends/{{current_user.shortname}}" class="nav-btn">All</a>
-                    {% endif %}
-                </ul>
+<div class="container justify-content-end" id="profile-box">
+    <div class="container" id="avatar">
+        <div class="row">
+        <div class="col-sm-5">
+            <div class="card" style="width: 18rem;">
+                <img src={{avatar}}>
+                {% if user.shortname == current_user.shortname %}
+                    <form class="formp" method="post" enctype=multipart/form-data>
+                        <input type="file" accept="image/jpeg,image/png,image/bmp" value="Загрузить" name="upload">
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </form>
+                {% endif %}
             </div>
         </div>
+        <div class="info col-sm">
+            <h1>{{user.name}} {{user.surname}}</h1><br>
+            <h4>About me</h4>
+            <div>яwgedfged</div>
+            <h4>Registration date</h4>
+            <div>{{date}}</div>
+            <h4>Address</h4>
+            <div>{{user.address}}</div>
+        </div>
+      </div>
     </div>
+    <div class="container-sm" id="avatar-div" align="left">
+
+
+    </div>
+
+    <div class="info">
+        <h4>Friends</h4>
+        <ul>
+            {% if len_friends <= 5%}
+                {% for i in friends%}
+                    <li><a href="/profile/{{i.shortname}}" class="nav-btn">{{i.name}}</a></li>
+                {% endfor %}
+            {% else %}
+                {% for i in range(5)%}
+                    <li><a href="/profile/{{friends[i].shortname}}" class="nav-btn">{{friends[i].name}}</a></li>
+                {% endfor %}
+                <a href="/profile/friends/{{current_user.shortname}}" class="nav-btn">All</a>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+<div class="container justify-content-end">
     <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
         <div class="carousel-inner">
             {% for i in photo %}
-                <p>{{i}}</p>
                 <div class="carousel-item active">
-                    <img src="{{url_for('static', filename='user_images/Admin2/{{i}}')}}" class="d-block w-100">
+                        <img src={{i}} class="d-block w-100">
                 </div>
             {% endfor %}
         </div>
@@ -67,4 +64,37 @@
             <span class="visually-hidden">Next</span>
         </button>
     </div>
+</div>
+<div class="container justify-content-end" id="news">
+    <div class="container-lg">
+        <div class="row justify-content-md-center">
+            <h1 align="center">News</h1>
+            {% if current_user.is_authenticated %}
+                <div align="center"><button class="new-dialog-btn"><a href="/add_news">New news</a></button></div>
+            {% endif %}
+        </div>
+    </div>
+    {% for item in news%}
+        <div class="card">
+            <h5 class="card-header">{{item.title}}</h5>
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="/profile/{{item.user.shortname}}" class="nav-btn">{{item.user.name}}</a>
+                    {{item.date}} {{item.time}}
+                </h5>
+                <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                {% if current_user.is_authenticated and current_user == item.user %}
+                    <div class="d-flex w-100 justify-content-flex-end">
+                        <a href="/edit_news/{{ item.id }}" class="btn btn-warning">
+                            Изменить
+                        </a>
+                        <a href="/del_news/{{ item.id }}" class="btn btn-danger">
+                            Удалить
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}

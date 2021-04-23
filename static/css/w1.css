@@ -2,7 +2,7 @@
     margin: 20px;
 }
 body {
-    height: 1500px;
+    height: 2000px;
 }
 header {
     position: relative;
@@ -311,9 +311,23 @@ div.scrollspy {
     border: 2px solid gray;
     padding: 2px ;
     outline: none;
-    width: 100%;
+    width: 900px;
     height: 600px;
 }
-#avator-div {
-    max-width: 288px;
+#avatar {
+    height: 372px;
+}
+.support-info a, p {
+    color: black;
+}
+#news{
+    width: 900px;
+}
+.new-news-btn a {
+	color: #000000;
+	text-decoration: none;
+}
+.new-news-btn:hover a {
+	color: #ffffff;
+	text-decoration: none;
 }
