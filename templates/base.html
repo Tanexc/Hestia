@@ -1,6 +1,6 @@
 <html lang="en"><head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/css/e1.css">
+    <link rel="stylesheet" href="/static/css/w1.css">
     <script type='text/javascript' src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico')}}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -26,6 +26,7 @@
                           </button>
                           <ul class="dropdown-menu" id="settings-ul" aria-labelledby="dropdownMenuButton1">
                             <li><a class="custom-a" href="/settings/change-password">Change password</a></li>
+                            <li><a class="custom-a" href="/settings/change-profile">Change profile</a></li>
                           </ul>
                         </div>
                     </div>
@@ -34,7 +35,7 @@
             <div class="container-fluid">
                   <div class="row row-cols-auto justify-content-md-center">
                     <div class="col"><a href="/friends" class="nav-btn">Friends</a></div>
-                    <div class="col"><a href="/profile/{{current_user.id}}" class="nav-btn">Me</a></div>
+                    <div class="col"><a href="/profile/{{current_user.shortname}}" class="nav-btn">Me</a></div>
                     <div class="col"><a href="/news" class="nav-btn">News</a></div>
                     <div class="col"><a href="/messages" class="nav-btn">Messages</a></div>
                   </div>

@@ -1,26 +1,70 @@
 {% extends "base.html" %}
-{% block title %}
-{{shortname}}
-{% endblock %}
 {% block content %}
     <div class="container justify-content-end" id="dialog">
         <div id="profile-box">
-            <div class="info">
-            <h1>{{name}} {{surname}}</h1><br>
-            <h4>About me</h4>
-            <div>яwgedfged</div>
-            <h4>Registration date</h4>
-            <div>{{date}}</div>
-            <h4>Address</h4>
-            <div>{{address}}</div>
-            {% if id == current_user.id %}
-                <h4 class="col r"><a href="/correction" class="nav-btn">Correction</a></h4>
-                <div class="form-group">
-                    <label for="photo">Загрузить фото</label>
-                    <input type="image" class="form-control-file" id="photo" name="file">
+            <div class="container">
+                <div class="row">
+                <div class="col-sm-5">
+                    <div class="card" style="width: 18rem;">
+                        {% set ava = url_for('static', filename="{{avatar}}")%}
+                        <img src="ht's.png" class="card-img-top">
+                        {% if user.shortname == current_user.shortname %}
+                            <form class="formp" method="post" enctype=multipart/form-data>
+                                <input type="file" accept="image/jpeg,image/png,image/bmp" value="Загрузить" name="upload">
+                                <button type="submit" class="btn btn-primary">Send</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
-            {% endif %}
+                <div class="info col-sm">
+                    <h1>{{user.name}} {{user.surname}}</h1><br>
+                    <h4>About me</h4>
+                    <div>яwgedfged</div>
+                    <h4>Registration date</h4>
+                    <div>{{date}}</div>
+                    <h4>Address</h4>
+                    <div>{{user.address}}</div>
+                </div>
+              </div>
+            </div>
+            <div class="container-sm" id="avatar-div" align="left">
+
+
+            </div>
+
+            <div class="info">
+                <h4>Friends</h4>
+                <ul>
+                    {% if len_friends <= 5%}
+                        {% for i in friends%}
+                            <li><a href="/profile/{{i.shortname}}" class="nav-btn">{{i.name}}</a></li>
+                        {% endfor %}
+                    {% else %}
+                        {% for i in range(5)%}
+                            <li><a href="/profile/{{friends[i].shortname}}" class="nav-btn">{{friends[i].name}}</a></li>
+                        {% endfor %}
+                        <a href="/profile/friends/{{current_user.shortname}}" class="nav-btn">All</a>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
+    </div>
+    <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for i in photo %}
+                <p>{{i}}</p>
+                <div class="carousel-item active">
+                    <img src="{{url_for('static', filename='user_images/Admin2/{{i}}')}}" class="d-block w-100">
+                </div>
+            {% endfor %}
         </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
 {% endblock %}

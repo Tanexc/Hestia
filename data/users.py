@@ -22,7 +22,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     last_seen = sqlalchemy.Column(sqlalchemy.DateTime)
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     confirmed = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
-    avatar_id = sqlalchemy.Column(sqlalchemy.Integer)
+    avatar = sqlalchemy.Column(sqlalchemy.String)
     friends = sqlalchemy.Column(sqlalchemy.String, nullable=True, default="")
     requests = sqlalchemy.Column(sqlalchemy.String, default="")
 

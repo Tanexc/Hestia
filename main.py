@@ -3,20 +3,22 @@ from random import choice as chs
 from sqlalchemy import or_
 import os
 from werkzeug.security import generate_password_hash
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, url_for
 from data import db_session
 from flask_login import LoginManager, login_required, logout_user
 from flask_login import login_user, current_user
 from data.dialog import Dialog
 from data.forms import RegisterForm, FinishRegistration
-from data.forms import LoginForm, DialogForm
+from data.forms import LoginForm, DialogForm, EditForm, NewsForm
 from data.forms import SearchFriendForm, FirstRecPswForm
 from data.forms import SecondRecPswForm, ThirdRecPswForm, ChangePswForm
 from data.users import User
+from data.news import News
 from post_service.post_srv import send_mail
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "super_secret_key_QWav43sd-svs3-001a"
+app.config["UPLOAD_FOLDER"] = "static/user_images/"
 login_manager = LoginManager()
 login_manager.init_app(app)
 MESSAGE_SPECIAL_SYMBOL_0 = "&&#/*/*/#&&"
@@ -110,6 +112,7 @@ def register():
         new_user.hashed_password = generate_password_hash(form.password.data)
         db_sess.add(new_user)
         db_sess.commit()
+        os.mkdir(app.config['UPLOAD_FOLDER'] + new_user.shortname)
         return redirect(f"/finish/{new_user.id}")
     return render_template("register.html", form=form, title="Register")
 
@@ -528,34 +531,75 @@ def success(mes_code):
     return render_template("success.html", message=message)
 
 
-@app.route("/profile/<int:id>", methods=["POST", "GET"])
-def me(id):
+@app.route("/profile/<shortname>", methods=["POST", "GET"])
+def profile(shortname):
     db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == id).first()
-    name = user.name
-    surname = user.surname
-    shortname = user.shortname
-    address = user.address
+    user = db_sess.query(User).filter(User.shortname == shortname).first()
     date = user.modified_date.date()
-    return render_template("me.html", name=name, surname=surname, shortname=shortname,
-                           address=address, date=date, id=id, title="Profile")
+    if user.friends != '':
+        friends = user.friends.split(';')
+    else:
+        friends = []
+    friends1 = []
+    for i in friends:
+        friends1.append(db_sess.query(User).filter(User.id == int(i)).first())
+    photo = os.listdir(f'static/user_images/Admin2')
+    if current_user.avatar is not None:
+        avatar = f"{current_user.shortname}/{current_user.avatar}"
+    else:
+        avatar = 'anonym.jpg'
+    if request.method == "POST":
+        image = request.files["upload"]
+        path = os.path.join(app.config["UPLOAD_FOLDER"] + f"{current_user.shortname}", image.filename)
+        image.save(path)
+        current_user.avatar = f"{image.filename}"
+    return render_template("me.html", user=user, date=date,
+                           friends=friends1, len_friends=len(friends1), photo=photo,
+                           avatar=avatar, title="Profile")
 
 
-@app.route("/correction", methods=["POST", "GET"])
-def correction():
-    form = RegisterForm()
+@app.route("/settings/edit", methods=["POST", "GET"])
+def edit():
+    form = EditForm()
     db_sess = db_session.create_session()
     if form.validate_on_submit():
-        user = db_sess.query(User).filter(User.id == id).first()
-        if len(db_sess.query(User).filter(User.email == form.email.data).all()) != 0:
-            return render_template("register.html", form=form, title="Register", message="This email already in use")
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
         user.address = form.address.data
         user.name = form.name.data
         user.surname = form.surname.data
         db_sess.add(user)
         db_sess.commit()
-        return redirect(f"/me/{user.id}")
-    return render_template("register.html", form=form, title="Register")
+        return redirect(f"/me/{user.shortname}")
+    return render_template("edit.html", form=form, title="Edit")
+
+
+@app.route("/profile/friends/<shortname>", methods=["POST", "GET"])
+def profile_friends(shortname):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.shortname == shortname).first()
+    friends = user.friends.split(';')
+    friends1 = []
+    for i in friends:
+        friends1.append(db_sess.query(User).filter(User.id == int(i)).first())
+    return render_template("profile_friends.html", friends=friends1, title="All friends")
+
+
+@app.route('/news',  methods=['GET', 'POST'])
+@login_required
+def add_news():
+    form = NewsForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        news = News()
+        news.title = form.title.data
+        news.content = form.content.data
+        news.is_private = form.is_private.data
+        current_user.news.append(news)
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('news.html', title='Добавление новости',
+                           form=form)
 
 
 if __name__ == "__main__":

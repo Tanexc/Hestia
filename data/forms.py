@@ -65,6 +65,14 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
+class EditForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    surname = StringField("Surname", validators=[DataRequired()])
+    address = StringField("Locality*")
+    about_me = StringField("About_me", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
 class DialogForm(FlaskForm):
     input_line = TextAreaField('Type your message there', validators=[DataRequired(),
                                                                       Length(min=1,
@@ -101,3 +109,10 @@ class ThirdRecPswForm(FlaskForm):
 class ChangePswForm(FlaskForm):
     password = StringField("Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+class NewsForm(FlaskForm):
+    title = StringField('Заголовок', validators=[DataRequired()])
+    content = TextAreaField("Содержание")
+    is_private = BooleanField("Личное")
+    submit = SubmitField('Применить')
