@@ -1,6 +1,6 @@
 <html lang="en"><head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/css/f7.css">
+    <link rel="stylesheet" href="/static/css/h1.css">
     <script type='text/javascript' src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico')}}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -61,12 +61,11 @@
         <div class="empty-plug"></div>
         {% block content %}
         {% endblock %}
-        <div class="empty-plug"></div>
+        <div class="empty-plug full-height"></div>
     </main>
     <footer>
-        <div class="form">
-            <a href="/support">Поддержка</a>
-            <p>HestiaNet@yandex.ru</p>
+        <div class="container float-center">
+            <p>Support: <br>HestiaNet@yandex.ru</p>
         </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"

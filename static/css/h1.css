@@ -2,7 +2,7 @@
     margin: 20px;
 }
 body {
-    height: 100%;
+    height: auto;
 }
 html {
     height: auto;
@@ -38,7 +38,6 @@ form.form {
     padding: 10px;
 }
 main {
-	height: 100%;
     background: #e0ffff;
 }
 footer {
@@ -396,6 +395,26 @@ div.scrollspy {
 .pretty-a:hover {
     color: #777777;
 }
-.group-chat {
-    background: #dddddd;
+.invite-btn {
+	border-radius: 10px;
+	border: none;
+	width: 100%;
+	height: 30px;
+	margin-bottom: 5px;
+    background-color: #50c878;
+}
+.invite-btn:hover {
+    background-color: #009900;
+    text-color: #ffffff;
+}
+.invite-btn a {
+	color: #000000;
+	text-decoration: none;
+}
+.invite-btn:hover a {
+	color: #ffffff;
+	text-decoration: none;
+}
+.full-height {
+    height: 50%;
 }
