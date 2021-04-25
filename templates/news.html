@@ -18,7 +18,7 @@
                 <a href="/profile/{{item.user.shortname}}" class="nav-btn">
                     {{item.user.name}} {{item.user.surname}}
                 </a>
-                {% if item.is_private == True%}
+                {% if item.is_private == True %}
                     <div class="col">
                         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Private</a>
                     </div>
@@ -36,8 +36,8 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title">{{item.title}}</h5>
-                <p class="card-text">{{item.content}}</p>
-                {% if item.photo_name != 0 %}
+                <div class="card-text">{{item.content}}</div>
+                {% if item.photo_name != '0' %}
                 <div class="container" style="width: 30rem;">
                     <div id="carouselExampleControls{{item.id}}"
                          class="carousel slide" data-bs-ride="carousel">

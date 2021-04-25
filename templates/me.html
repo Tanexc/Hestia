@@ -62,7 +62,8 @@
             {% endif %}
         </div>
     </div>
-    {% for item in news%}
+    {% for item in news %}
+        {% if (item.user_shortname == current_user.shortname and item.is_private) or not item.is_private%}
         <div class="card container-fluid" id="new">
             <div class="card-header row row-cols-auto justify-content-md-between">
                 <a href="/profile/{{item.user.shortname}}" class="nav-btn">
@@ -86,8 +87,8 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title">{{item.title}}</h5>
-                <p class="card-text">{{item.content}}</p>
-                {% if item.photo_name != 0 %}
+                <div class="card-text mb-3">{{item.content}}</div>
+                {% if item.photo_name != '0' %}
                 <div class="container" style="width: 30rem;">
                     <div id="carouselExampleControls{{item.id}}"
                          class="carousel slide" data-bs-ride="carousel">
@@ -117,6 +118,7 @@
                 {{item.date}} {{item.time}}
             </div>
         </div>
+        {% endif %}
     {% endfor %}
 </div>
 </div>

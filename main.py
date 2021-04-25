@@ -51,7 +51,6 @@ def get_last_message(dlg: Dialog):
     try:
         with open(f"{DIALOGS_DIR}{dlg.file}", "r", encoding="utf-8") as f:
             al = f.read().split(MESSAGE_SPECIAL_SYMBOL_1)
-            print(al)
             mes = al[-2].split(MESSAGE_SPECIAL_SYMBOL_0)[1]
             if len(mes) > 50:
                 mes = mes[:51]
@@ -119,7 +118,6 @@ def register():
 @app.route("/finish/<int:u_id>", methods=["POST", "GET"])
 def finish(u_id):
     global CODE
-    print(CODE)
     form = FinishRegistration()
     db_sess = db_session.create_session()
     usr = db_sess.query(User).filter(User.id == u_id)[0]
@@ -195,6 +193,7 @@ def logout():
 @login_required
 def messages():
     try:
+        avatar = f"/static/user_images/anonym.jpg"
         db_sess = db_session.create_session()
         update_time()
         dialogs = db_sess.query(Dialog).filter(or_(Dialog.members.like(f"%;{current_user.id}"),
@@ -210,6 +209,10 @@ def messages():
                 if member == current_user.id:
                     member = int(dialog.members.split(";")[1])
                 mem_obj = db_sess.query(User).filter(User.id == member).all()[0]
+                if mem_obj.avatar is not None:
+                    avatar = f"/static/user_images/{mem_obj.shortname}/{mem_obj.avatar}"
+                else:
+                    avatar = f"/static/user_images/anonym.jpg"
                 label = mem_obj.name + " " + mem_obj.surname
             last_message = get_last_message(dialog)
 
@@ -219,8 +222,12 @@ def messages():
                                    "last_message": last_message,
                                    "members_cnt": len(dialog.members.split(";"))
                                    })
-            dialog_objects.sort(key=lambda x: str(x["last_message"]), reverse=True)
-        return render_template("messages.html", dialogs=dialog_objects, title="Messages")
+
+            dialog_objects.sort(key=lambda x: str(x["last_message"]), reverse=False)
+        return render_template("messages.html",
+                               dialogs=dialog_objects,
+                               title="Messages",
+                               avatar=avatar)
     except Exception as e:
         print(e)
         return redirect("/")
@@ -690,7 +697,7 @@ def profile(shortname):
         avatar = f"/static/user_images/{user.shortname}/{user.avatar}"
     else:
         avatar = f"/static/user_images/anonym.jpg"
-    news = db_sess.query(News).filter((News.user_shortname == user.shortname) | (News.is_private != True))
+    news = db_sess.query(News).filter((News.user_shortname == user.shortname))
     if request.method == "POST":
         image = request.files["upload"]
         path = os.path.join(app.config["UPLOAD_FOLDER"] + f"{current_user.shortname}",

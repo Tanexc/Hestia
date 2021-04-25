@@ -5,7 +5,7 @@
     <h1>Add news</h1>
     <form action="" method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <p>
+        <div class="mb-3">
             {{ form.title.label }}<br>
             {{ form.title(class="form-control") }}<br>
             {% for error in form.title.errors %}
@@ -13,8 +13,8 @@
                     {{ error }}
                 </p>
             {% endfor %}
-        </p>
-        <p>
+        </div>
+        <div class="mb-3">
             {{ form.content.label }}<br>
             {{ form.content(class="form-control") }}<br>
             {% for error in form.content.errors %}
@@ -22,7 +22,7 @@
                     {{ error }}
                 </p>
             {% endfor %}
-        </p>
+        </div>
         <div>
             {{ form.image.label }}<br>
             {{ form.image(class="form-control-1") }}<br>
@@ -30,7 +30,7 @@
         <button class="btn btn-danger" id="del-photo">
             <a href="/photo/delete/{{news.id}}">Delete all</a>
         </button>
-        <p>{{ form.is_private() }} {{ form.is_private.label }}</p>
+        <div>{{ form.is_private() }} {{ form.is_private.label }}</div>
         <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
         {{message}}
     </form>

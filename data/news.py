@@ -23,4 +23,4 @@ class News(SqlAlchemyBase, UserMixin, SerializerMixin):
     user_shortname = sqlalchemy.Column(sqlalchemy.String,
                                 sqlalchemy.ForeignKey("users.shortname"))
     user = orm.relation('User')
-    photo_name = sqlalchemy.Column(sqlalchemy.String, default=0)
+    photo_name = sqlalchemy.Column(sqlalchemy.String, default="0")

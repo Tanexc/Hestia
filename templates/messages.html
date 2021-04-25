@@ -11,8 +11,9 @@
         </div>
         <ul class="list-group">
             {% for i in dialogs %}
-                {% if i.member_cnt == 2 %}
+                {% if i['members_cnt'] == 2 %}
                     <div class="col list-group-horizontal-lg">
+
                       <div class="dropdown dropend float-end" id="dialog-settings">
                           <button class="btn btn-secondary dropdown-toggle-1" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
                               <p id="settings-p">. . .</p>
@@ -23,6 +24,9 @@
                           </ul>
                       </div>
                       <a class="list-group-item d-flex justify-content-between align-items-center pretty-a" href="/dialog/{{i['id']}}">
+                        <div class="card" id="member-image">
+                            <img src={{avatar}}>
+                        </div>
                         <h5 class="mb-1">{{ i['member'] }}</h5>
                         <p class="custom-p">{{i["last_message"]}}</p>
                         <span class="badge bg rounded-pill float-end">Last message was at {{i["updated"]}}</span>

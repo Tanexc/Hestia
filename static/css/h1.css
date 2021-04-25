@@ -190,16 +190,6 @@ div.scrollspy {
 	min-height: 50px;
 	margin: auto;
 }
-
-.info {
-    margin-left: auto;
-    margin-right: auto;
-    max-width:auto;
-    border: 0px;
-    border-radius: 10px;
-    padding: 10px;
-    right: 50px;
-}
 #friend-box {
     position: relative;
 	margin-left: auto;
@@ -409,38 +399,6 @@ div.scrollspy {
 	border-radius: 10px;
 	border: none;
 	width: 100%;
-	}
-#profile-box {
-    position: relative;
-    border-radius: 10px;
-    border: 2px solid gray;
-    padding: 2px ;
-    outline: none;
-    width: 900px;
-    height: 600px;
-}
-#avatar1 {
-    height: 400px;
-    width: 249px;
-}
-#avatar2 {
-    height: 400px;
-    width: 300px;
-}
-.support-info a, p {
-    color: black;
-}
-#news{
-    width: 600px;
-}
-#new {
-    margin-bottom: 10px;
-    max-height: 610px;
-}
-.new-news-btn{
-	border-radius: 10px;
-	border: none;
-	width: 80px;
 	height: 30px;
 	margin-bottom: 5px;
     background-color: #50c878;
@@ -458,7 +416,40 @@ div.scrollspy {
 	text-decoration: none;
 }
 .full-height {
-    height: 50%;
+    height: 100%;
+}
+#profile-box {
+    position: relative;
+    border-radius: 10px;
+    border: 2px solid gray;
+    padding: 2px ;
+    outline: none;
+    width: 900px;
+    height: 600px;
+}
+#avatar1 {
+    height: 400px;
+    width: 249px;
+}
+#avatar2 {
+    height: 400px;
+    width: 300px;
+}
+#news{
+    width: 600px;
+}
+#new {
+    margin-bottom: 10px;
+    max-height: 710px;
+}
+.new-news-btn{
+	border-radius: 10px;
+	border: none;
+	width: 80px;
+	height: 30px;
+	margin-bottom: 5px;
+    background-color: #50c878;
+}
 .new-news-btn:hover {
 	color: #ffffff;
 	text-decoration: none;
@@ -482,4 +473,17 @@ div.scrollspy {
     margin-bottom: 10px;
 	color: #000000;
 	text-decoration: none;
+}
+.info {
+    margin-left: auto;
+    margin-right: auto;
+    max-width:auto;
+    border: 0px;
+    border-radius: 10px;
+    padding: 10px;
+    right: 50px;
+}
+#member-image {
+    max-width: 40px;
+    min-width: 40px;
 }
