@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, SubmitField
 from wtforms import StringField, PasswordField
 from wtforms import IntegerField, TextAreaField
+from wtforms import FileField
 from random import choice as chs
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, EqualTo, Email, Length, ValidationError
@@ -84,6 +85,14 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
+class EditForm(FlaskForm):
+    name = StringField("Name")
+    surname = StringField("Surname")
+    address = StringField("Locality*")
+    about_me = StringField("About_me")
+    submit = SubmitField("Submit")
+
+
 class DialogForm(FlaskForm):
     input_line = TextAreaField('Type your message there', validators=[DataRequired(),
                                                                       Length(min=1,
@@ -120,6 +129,14 @@ class ThirdRecPswForm(FlaskForm):
 class ChangePswForm(FlaskForm):
     password = StringField("Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+class NewsForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    content = TextAreaField("Content", validators=[Length(min=0, max=256)])
+    image = FileField('Photo')
+    is_private = BooleanField("Private")
+    submit = SubmitField('Submit')
 
 
 class CreateChatForm(FlaskForm):

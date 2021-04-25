@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container justify-content-center">
+        <div class="container-lg">
+              <div class="row justify-content-md-center">
+                  <div class="col-1"><button class="new-dialog-btn"><a href="/friends">New friends</a></button></div>
+              </div>
+        </div>
+    {% for i in friends %}
+        <div class="list-group">
+          <a href="/profile/{{i.shortname}}" class="list-group-item list-group-item-action" aria-current="true">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">{{i.name}} {{i.surname}}</h5>
+            </div>
+            <div class="container-sm justify-content-center">
+              <p class="mb-4">{{i.address}}</p>
+            </div>
+          </a>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}
