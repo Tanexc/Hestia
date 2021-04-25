@@ -543,23 +543,25 @@ def profile(shortname):
     friends1 = []
     for i in friends:
         friends1.append(db_sess.query(User).filter(User.id == int(i)).first())
-    photo = os.listdir(f'static/user_images/{current_user.shortname}')
-    for i in range(len(photo)):
-        photo[i] = f"/static/user_images/{user.shortname}/{photo[i]}"
     if user.avatar is not None:
         avatar = f"/static/user_images/{user.shortname}/{user.avatar}"
     else:
         avatar = f"/static/user_images/anonym.jpg"
-    news = db_sess.query(News).filter((News.user_id == user.id) | (News.is_private != True))
+    news = db_sess.query(News).filter((News.user_shortname == user.shortname) | (News.is_private != True))
     if request.method == "POST":
         image = request.files["upload"]
-        path = os.path.join(app.config["UPLOAD_FOLDER"] + f"{current_user.shortname}", image.filename)
+        path = os.path.join(app.config["UPLOAD_FOLDER"] + f"{current_user.shortname}",
+                            image.filename)
         image.save(path)
         current_user.avatar = f"{image.filename}"
         db_sess.merge(current_user)
         db_sess.commit()
+        if user.avatar is not None:
+            avatar = f"/static/user_images/{user.shortname}/{user.avatar}"
+        else:
+            avatar = f"/static/user_images/anonym.jpg"
     return render_template("me.html", user=user, date=date,
-                           friends=friends1, len_friends=len(friends1), photo=photo,
+                           friends=friends1, len_friends=len(friends1),
                            avatar=avatar, news=news, title="Profile")
 
 
@@ -569,9 +571,12 @@ def edit():
     db_sess = db_session.create_session()
     if form.validate_on_submit():
         user = db_sess.query(User).filter(User.id == current_user.id).first()
-        user.address = form.address.data
-        user.name = form.name.data
-        user.surname = form.surname.data
+        if form.address.data != '':
+            user.address = form.address.data
+        if form.name.data != '':
+            user.name = form.name.data
+        if form.surname.data != '':
+            user.surname = form.surname.data
         db_sess.add(user)
         db_sess.commit()
         return redirect(f"/profile/{user.shortname}")
@@ -601,32 +606,39 @@ def news():
 @login_required
 def add_news():
     form = NewsForm()
+    db_sess = db_session.create_session()
+    news = News()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        news = News()
         news.title = form.title.data
         news.content = form.content.data
         news.is_private = form.is_private.data
-        news.user_id = current_user.id
+        news.user_shortname = current_user.shortname
         hour = datetime.datetime.now().time().hour
         min = datetime.datetime.now().time().minute
         news.time = datetime.time(hour, min)
+        try:
+            img = form.image.data
+            path = f"static/user_images/{current_user.shortname}/" + img.filename
+            img.save(path)
+            news.photo_name = img.filename
+        except Exception:
+            pass
         db_sess.add(news)
         db_sess.commit()
         return redirect('/news')
     return render_template('add_news.html', title='Добавление новости',
-                           form=form)
+                           form=form, news=news)
 
 
 @app.route('/edit_news/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_news(id):
     form = NewsForm()
+    db_sess = db_session.create_session()
+    news = db_sess.query(News).filter(News.id == id,
+                                      News.user == current_user
+                                      ).first()
     if request.method == "GET":
-        db_sess = db_session.create_session()
-        news = db_sess.query(News).filter(News.id == id,
-                                          News.user == current_user
-                                          ).first()
         if news:
             form.title.data = news.title
             form.content.data = news.content
@@ -634,21 +646,27 @@ def edit_news(id):
         else:
             abort(404)
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        news = db_sess.query(News).filter(News.id == id,
-                                          News.user == current_user
-                                          ).first()
         if news:
             news.title = form.title.data
             news.content = form.content.data
             news.is_private = form.is_private.data
+            try:
+                img = form.image.data
+                path = f"static/user_images/{current_user.shortname}/" + img.filename
+                img.save(path)
+                if news.photo_name != 0:
+                    news.photo_name = ';'.join([news.photo_name, img.filename])
+                else:
+                    news.photo_name = img.filename
+            except Exception:
+                pass
             db_sess.commit()
             return redirect('/news')
         else:
             abort(404)
     return render_template('edit_news.html',
                            title='Редактирование новости',
-                           form=form
+                           form=form, news=news
                            )
 
 
@@ -666,6 +684,14 @@ def news_delete(id):
         abort(404)
     return redirect('/news')
 
+
+@app.route("/photo/delete/<id>")
+def photo_delete(id):
+    db_sess = db_session.create_session()
+    news = db_sess.query(News).filter(News.id == id).first()
+    news.photo_name = None
+    db_sess.commit()
+    return redirect(f'/edit_news/{id}')
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, SubmitField
 from wtforms import StringField, PasswordField
 from wtforms import IntegerField, TextAreaField
+from wtforms import FileField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, EqualTo, Email, Length, ValidationError
 
@@ -66,10 +67,10 @@ class LoginForm(FlaskForm):
 
 
 class EditForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
-    surname = StringField("Surname", validators=[DataRequired()])
+    name = StringField("Name")
+    surname = StringField("Surname")
     address = StringField("Locality*")
-    about_me = StringField("About_me", validators=[DataRequired()])
+    about_me = StringField("About_me")
     submit = SubmitField("Submit")
 
 
@@ -112,7 +113,8 @@ class ChangePswForm(FlaskForm):
 
 
 class NewsForm(FlaskForm):
-    title = StringField('Заголовок', validators=[DataRequired()])
-    content = TextAreaField("Содержание")
-    is_private = BooleanField("Личное")
-    submit = SubmitField('Применить')
+    title = StringField('Title', validators=[DataRequired()])
+    content = TextAreaField("Content", validators=[Length(min=0, max=256)])
+    image = FileField('Photo')
+    is_private = BooleanField("Private")
+    submit = SubmitField('Submit')
