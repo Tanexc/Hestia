@@ -23,7 +23,7 @@
                         {{ i(class="form-control", id="form-field") }}<br>
                     {% endif %}
                     {% for error in i.errors %}
-                        <div class="alert alert-danger" role="alert">
+                        <div class="alert alert-danger" role="alert" id="errors">
                             <p>{{error}}</p>
                         </div>
                     {% endfor %}

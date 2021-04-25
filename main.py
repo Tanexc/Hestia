@@ -1,55 +1,45 @@
 import datetime
+import os
 from random import choice as chs
 from sqlalchemy import or_
 from werkzeug.security import generate_password_hash
 from flask import Flask, render_template, redirect, request
-from data import db_session, user_resource
+from data import db_session, user_resource, dialog_resource
 from flask_login import LoginManager, login_required, logout_user
 from flask_login import login_user, current_user
 from data.dialog import Dialog
-from data.forms import RegisterForm, FinishRegistration
-from data.forms import LoginForm, DialogForm
+from data.forms import RegisterForm, FinishRegistration, CreateChatForm
+from data.forms import LoginForm, DialogForm, generate_code
 from data.forms import SearchFriendForm, FirstRecPswForm
 from data.forms import SecondRecPswForm, ThirdRecPswForm, ChangePswForm
 from data.users import User
 from post_service.post_srv import send_mail
 from flask_restful import reqparse, abort, Api, Resource
 
+MESSAGE_SPECIAL_SYMBOL_0 = "&#&/<-sndr/*/msg->/&#&"  # символ разделения отправителя от текста сообщения
+MESSAGE_SPECIAL_SYMBOL_1 = "&~&/end/*/mes/&~&"  # символ разделения сообщений
+MESSAGE_SPECIAL_SYMBOL_2 = "&?&/unread/&?&"  # символ пометки сообщения как не прочитанного
+DIALOGS_DIR = "db/dialogs/"  # расположение диалогов
+CODE = generate_code()  # заранее генерируем код( при использовании он меняется )
 
-MESSAGE_SPECIAL_SYMBOL_0 = "&&#/*/*/#&&"
-MESSAGE_SPECIAL_SYMBOL_1 = "&~&end*mes&~&"
-DIALOGS_DIR = "db/dialogs/"
-
+# Инициализация приложения
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "super_secret_key_QWav43sd-svs3-001a"
+app.config["SECRET_KEY"] = "super_secret_key_QWav-43sd-svs3-001a"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+# API приложения
 api = Api(app)
 api.add_resource(user_resource.UsersListResource, "/api/users")
 api.add_resource(user_resource.UsersResource, "/api/users/<int:user_id>")
-api.add_resource(user_resource.UsersListResource, "/api/dialogs")
-api.add_resource(user_resource.UsersResource, "/api/users/<int:dialog_id>")
+api.add_resource(dialog_resource.DialogsListResource, "/api/dialogs")
+api.add_resource(dialog_resource.DialogsResource, "/api/users/<int:dialog_id>")
 
 
 # функция запуска приложения
 def main():
     db_session.global_init("db/hestia_main.db")
     app.run()
-
-
-# функция генерирующая код для завершения регистрации
-def generate_code():
-    code = str(chs(range(10)))\
-           + str(chs(range(10)))\
-           + str(chs(range(10)))\
-           + str(chs(range(10)))\
-           + str(chs(range(10)))\
-           + str(chs(range(10)))
-    return code
-
-
-CODE = generate_code()
 
 
 # функция получения последнего сообщения из диалога
@@ -136,20 +126,25 @@ def finish(u_id):
            f"Вы заполниои форму регистрации Hestia.\n" \
            f"Для завершения регистрации введите код.\n" \
            f"Супер индивидуальный код: {CODE}"
-    if not usr.confirmed:
-        if send_mail(email, subject, text, []):
-            if form.validate_on_submit():
-                if CODE == str(form.code.data):
-                    usr.confirmed = True
-                    db_sess.commit()
-                    CODE = generate_code()
-                    return redirect("/success/2")
-                else:
-                    alert = "Uncorrect code"
+    if request.method == "GET":
+        sent = send_mail(email, subject, text, [])
+        if not sent:
+            sent = send_mail(email, subject, text, [])
+            if not sent:
+                alert = "Something is wrong, please try later."
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            if CODE == str(form.code.data):
+                usr.confirmed = True
+                db_sess.commit()
                 CODE = generate_code()
-        else:
-            alert = "Что то не так"
-    return render_template("finish.html", form=form, title="Finish Registration", alert=alert)
+                return redirect("/success/2")
+            else:
+                alert = "Incorrect code. Try again"
+    return render_template("finish.html",
+                           form=form,
+                           title="Finish Registration",
+                           alert=alert)
 
 
 # главная страница социальной сети
@@ -171,10 +166,12 @@ def login():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.shortname == form.shortname.data).first()
-        if user and user.check_password(form.password.data):
+        if user and user.check_password(form.password.data) and user.confirmed:
             login_user(user, remember=form.remember_me.data)
             update_time()
             return redirect(f"/home/{user.shortname}")
+        elif not user.confirmed:
+            return redirect(f"/finish/{user.id}")
         return render_template('login.html',
                                message="Incorrect login or password",
                                form=form, title='Authorization')
@@ -193,186 +190,318 @@ def logout():
 @app.route("/messages")
 @login_required
 def messages():
-    db_sess = db_session.create_session()
-    update_time()
-    dialogs = db_sess.query(Dialog).filter(Dialog.members.like(f"%{current_user.id}%")).all()
-    dialog_objects = []
-    for dialog in dialogs:
-        member = int(dialog.members.split(";")[0])
-        if member == current_user.id:
-            member = int(dialog.members.split(";")[1])
-        mem_obj = db_sess.query(User).filter(User.id == member).all()[0]
-        last_message = get_last_message(dialog)
-        print(last_message)
-        dialog_objects.append({"member": mem_obj.name + " " + mem_obj.surname,
-                               "id": dialog.id,
-                               "updated": dialog.modified_date,
-                               "last_message": last_message})
-    return render_template("messages.html", dialogs=dialog_objects, title="Messages")
+    try:
+        db_sess = db_session.create_session()
+        update_time()
+        dialogs = db_sess.query(Dialog).filter(or_(Dialog.members.like(f"%;{current_user.id}"),
+                                                   Dialog.members.like(f"%;{current_user.id};%"),
+                                                   Dialog.members.like(f"{current_user.id};%"),
+                                                   Dialog.members == f"{current_user.id}")).all()
+        dialog_objects = []
+        for dialog in dialogs:
+            if dialog.label != "_":
+                label = dialog.label
+            else:
+                member = int(dialog.members.split(";")[0])
+                if member == current_user.id:
+                    member = int(dialog.members.split(";")[1])
+                mem_obj = db_sess.query(User).filter(User.id == member).all()[0]
+                label = mem_obj.name + " " + mem_obj.surname
+            last_message = get_last_message(dialog)
+
+            dialog_objects.append({"member": label,
+                                   "id": dialog.id,
+                                   "updated": dialog.modified_date,
+                                   "last_message": last_message,
+                                   "members_cnt": len(dialog.members.split(";"))
+                                   })
+            dialog_objects.sort(key=lambda x: str(x["last_message"]), reverse=True)
+        return render_template("messages.html", dialogs=dialog_objects, title="Messages")
+    except Exception as e:
+        print(e)
+        return redirect("/")
 
 
 # функция открытия конкретного диалога
 @app.route("/dialog/<dlg_id>", methods=["POST", "GET"])
 @login_required
 def dialog(dlg_id):
-    update_time()
-    form = DialogForm()
-    dlg_mes = {}
-    db_sess = db_session.create_session()
-    dialog = db_sess.query(Dialog).filter(Dialog.id == dlg_id).first()
-    member = int(dialog.members.split(";")[0])
-    if member == current_user.id:
-        member = int(dialog.members.split(";")[1])
-    user = db_sess.query(User).filter(User.id == member).first()
-    member = user.name + " " + user.surname
-    shortname = user.shortname
-    last_seen = f"last action at {str(user.last_seen)[:-10]}"
-    print(user.last_seen)
-    dlg_file = dialog.file
-    if request.method == "POST":
-        if form.validate_on_submit():
-            with open(f"{DIALOGS_DIR}{dlg_file}", "a+", encoding="utf-8") as dlg:
-                dlg.write(f"{current_user.id}{MESSAGE_SPECIAL_SYMBOL_0}"
-                          f"{form.input_line.data}{MESSAGE_SPECIAL_SYMBOL_1}")
-            form.input_line.data = ""
-            dialog.modified_date = datetime.datetime.now()
-            db_sess.commit()
-    with open(f"{DIALOGS_DIR}{dlg_file}", "r", encoding="utf-8") as dlg:
-        m = dlg.read().split(MESSAGE_SPECIAL_SYMBOL_1)
-        try:
-            for num, i in enumerate(m):
-                text = i.split(MESSAGE_SPECIAL_SYMBOL_0)[1]
-                user = int(i.split(MESSAGE_SPECIAL_SYMBOL_0)[0])
-                dlg_mes[num] = {"user": user, "text": text}
-        except:
-            pass
-    return render_template("dialog.html", messages=dlg_mes,
-                           member=member,
-                           form=form,
-                           title=f"Dialog with {member}",
-                           shortname=shortname,
-                           last_seen=last_seen)
+    try:
+        update_time()
+        form = DialogForm()
+        dlg_mes = {}
+        db_sess = db_session.create_session()
+        dialog = db_sess.query(Dialog).filter(Dialog.id == dlg_id).first()
+        member = int(dialog.members.split(";")[0])
+        if len(dialog.members.split(";")) != 1:
+            member = int(dialog.members.split(";")[0])
+            last_seen = ""
+            if member == current_user.id:
+                member = int(dialog.members.split(";")[1])
+                user = db_sess.query(User).filter(User.id == member).first()
+                member = user.name + " " + user.surname
+                last_seen = f"last action at {str(user.last_seen)[:-10]}"
+        else:
+            member = dialog.label
+            last_seen = ""
+        dlg_file = dialog.file
+        if request.method == "POST":
+            if form.validate_on_submit():
+                with open(f"{DIALOGS_DIR}{dlg_file}", "a+", encoding="utf-8") as dlg:
+                    dlg.write(f"{current_user.id}{MESSAGE_SPECIAL_SYMBOL_0}"
+                              f"{form.input_line.data}{MESSAGE_SPECIAL_SYMBOL_1}")
+                form.input_line.data = ""
+                dialog.modified_date = datetime.datetime.now()
+                db_sess.commit()
+        with open(f"{DIALOGS_DIR}{dlg_file}", "r", encoding="utf-8") as dlg:
+            m = dlg.read().split(MESSAGE_SPECIAL_SYMBOL_1)
+            try:
+                for num, i in enumerate(m):
+                    text = i.split(MESSAGE_SPECIAL_SYMBOL_0)[1]
+                    user = int(i.split(MESSAGE_SPECIAL_SYMBOL_0)[0])
+                    dlg_mes[num] = {"user": user, "text": text}
+            except:
+                pass
+        return render_template("dialog.html", messages=dlg_mes,
+                               member=member,
+                               form=form,
+                               title=f"Dialog with {member}",
+                               last_seen=last_seen)
+    except Exception as e:
+        print(e)
+        return redirect("/messages")
 
 
 # функция открывающаяя страницу со списком друзей пользователя
 @app.route("/friends")
 @login_required
 def friends():
-    update_time()
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == current_user.id).first()
-    friends = []
     try:
-        friends = user.friends.split(";")
-        friends = list(filter(lambda x: x != "", friends))
-        friends = list(map(lambda x: [db_sess.query(User).filter(User.id == int(x)).first().name
-                                     + " "
-                                     + db_sess.query(User).filter(User.id == int(x)).first().surname,
-                                      db_sess.query(User).filter(User.id == int(x)).first().shortname,
-                                      db_sess.query(User).filter(User.id == int(x)).first().id],
-                           friends))
+        update_time()
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        friends = []
+        try:
+            friends = user.friends.split(";")
+            friends = list(filter(lambda x: x != "", friends))
+            friends = list(map(lambda x:
+                               [db_sess.query(User).filter(User.id == int(x)).first().name
+                                + " "
+                                + db_sess.query(User).filter(User.id == int(x)).first().surname,
+                                db_sess.query(User).filter(User.id == int(x)).first().shortname,
+                                db_sess.query(User).filter(User.id == int(x)).first().id],
+                               friends))
+        except Exception:
+            pass
+        return render_template("friends.html", friends=friends, title="Friends")
     except Exception:
-        pass
-    return render_template("friends.html", friends=friends, title="Friends")
+        return redirect("/")
 
 
 # функция открывающаяя страницу с поиском новых друзей
 @app.route("/friends/search", methods=["POST", "GET"])
 @login_required
 def search():
+    try:
+        update_time()
+        db_sess = db_session.create_session()
+        cu = db_sess.query(User).filter(User.id == current_user.id).first()
+        form = SearchFriendForm()
+        in_ln = form.input_line.data
+        if form.validate_on_submit():
+            searched_users = db_sess.query(User).filter(
+                or_(User.shortname.like(f"%"
+                                        f"{in_ln}"
+                                        f"%"),
+                    User.name.like(f"%{form.input_line.data}%"),
+                    User.surname.like(f"%{form.input_line.data}"
+                                      f"%"))).all()
+
+            searched_users = list(map(lambda x: [x.name + " " + x.surname,
+                                                 x.shortname,
+                                                 x.id,
+                                                 check_requests_friend(x)],
+                                      searched_users))
+        else:
+            searched_users = db_sess.query(User).filter().all()
+            searched_users = list(map(lambda x: [x.name + " " + x.surname,
+                                                 x.shortname,
+                                                 x.id,
+                                                 check_requests_friend(x)],
+                                      searched_users))
+        return render_template("search_friends.html",
+                               title="Searching Friends",
+                               searched_users=searched_users,
+                               form=form)
+    except Exception:
+        return redirect("/friends")
+
+
+# функция открывающая список друзей для приглашения в беседу
+@app.route("/messages/invite/<dialog_id>", methods=["POST", "GET"])
+@login_required
+def invite_in_dialog(dialog_id):
     update_time()
     db_sess = db_session.create_session()
-    cu = db_sess.query(User).filter(User.id == current_user.id).first()
-    form = SearchFriendForm()
-    in_ln = form.input_line.data
-    if form.validate_on_submit():
-        searched_users = db_sess.query(User).filter(or_(User.shortname.like(f"%"
-                                                                            f"{in_ln}"
-                                                                            f"%"),
-                                                        User.name.like(f"%{form.input_line.data}%"),
-                                                        User.surname.like(f"%{form.input_line.data}"
-                                                                          f"%"))).all()
+    dlg = db_sess.query(Dialog).filter(Dialog.id == dialog_id).first()
+    dlg_members = list(filter(lambda x: x != "", dlg.members.split(";")))
+    if len(dlg_members) == 2 and dlg.label == "":
+        return redirect("/make_group_chat")
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    friends = []
+    friends = user.friends.split(";")
+    if request.method == "POST":
+        for i in friends:
+            try:
+                if request.form[f"invite{i}"]:
+                    dlg_members.append(i)
+            except Exception as e:
+                print(e)
+        dlg.members = ";".join(dlg_members)
+        db_sess.commit()
+        return redirect("/messages")
+    friends = list(filter(lambda x: x != "", friends))
+    friends = list(map(lambda x: [db_sess.query(User).filter(User.id == int(x)).first().name
+                                  + " "
+                                  + db_sess.query(User).filter(User.id == int(x)).first().surname,
+                                  db_sess.query(User).filter(User.id == int(x)).first().shortname,
+                                  db_sess.query(User).filter(User.id == int(x)).first().id
+                                  if str(db_sess.query(User).filter(User.id == int(x)).first().id)
+                                     not in dlg_members
+                                  else ""],
+                       friends))
+    return render_template("invite_friends.html", friends=friends, title="Invite")
 
-        searched_users = list(map(lambda x: [x.name + " " + x.surname,
-                                             x.shortname,
-                                             x.id,
-                                             check_requests_friend(x)],
-                                  searched_users))
-    else:
-        searched_users = db_sess.query(User).filter().all()
-        searched_users = list(map(lambda x: [x.name + " " + x.surname,
-                                             x.shortname,
-                                             x.id,
-                                             check_requests_friend(x)],
-                                  searched_users))
-    return render_template("search_friends.html",
-                           title="Searching Friends",
-                           searched_users=searched_users,
-                           form=form)
+
+# функция создающая групповой чат
+@app.route("/messages/make_group_chat", methods=["POST", "GET"])
+@login_required
+def new_group_chat():
+    db_sess = db_session.create_session()
+    try:
+        update_time()
+        form = CreateChatForm()
+        if form.validate_on_submit():
+            dlg = Dialog()
+            dlg.label = form.label.data
+            dlg_id = max(list(map(lambda x: int(x.id),
+                                  db_sess.query(Dialog).filter().all())) + [0]) + 1
+            dlg.id = dlg_id
+            dlg.file = f"dialog{dlg_id}.dlg"
+            dlg.members = str(current_user.id)
+            f = open(f"{DIALOGS_DIR}{dlg.file}", "w", encoding="utf-8")
+            f.close()
+            db_sess.add(dlg)
+            db_sess.commit()
+            return redirect(f"/messages/invite/{dlg_id}")
+        return render_template("create_group_chat.html", form=form, title="Invite")
+    except Exception:
+        return redirect("/messages")
 
 
 # функция создающаяя диалог с пользователем
-@app.route("/new_dialog/<int:member_id>")
+@app.route("/messages/new_dialog/<int:member_id>", methods=["GET", "POST"])
 @login_required
 def new_dialog(member_id):
-    update_time()
-    db_sess = db_session.create_session()
-    q = db_sess.query(Dialog).filter(or_(Dialog.members == f"{current_user.id};{member_id}",
-                                         Dialog.members == f"{member_id};{current_user.id}"
-                                                           f"")).first()
-    if q:
-        return redirect(f"/dialog/{q.id}")
-    else:
-        dlg = Dialog()
-        dlg.members = f"{current_user.id};{member_id}"
-        dlg.file = ""
-        db_sess.add(dlg)
+    try:
+        update_time()
+        db_sess = db_session.create_session()
+        exist_dlg = db_sess.query(Dialog).filter(or_(
+            Dialog.members == f"{current_user.id};{member_id}",
+            Dialog.members == f"{member_id};{current_user.id}")).first()
+        if exist_dlg:
+            return redirect(f"/dialog/{exist_dlg.id}")
+        else:
+            dlg = Dialog()
+            dlg.members = f"{current_user.id};{member_id}"
+            dlg.file = ""
+            db_sess.add(dlg)
+            db_sess.commit()
+            dlg.file = f"dialog{dlg.id}.dlg"
+            db_sess.commit()
+            f = open(f"{DIALOGS_DIR}{dlg.file}", "w", encoding="utf-8")
+            f.close()
+            return redirect(f"/dialog/{dlg.id}")
+    except Exception:
+        return redirect("/messages")
+
+
+# функция удаляющая диалог
+@app.route("/messages/delete_dialog/<int:dialog_id>", methods=["GET", "POST"])
+@login_required
+def delete_dialog(dialog_id):
+    try:
+        db_sess = db_session.create_session()
+        dlg = db_sess.query(Dialog).filter(Dialog.id == dialog_id).first()
+        members = ";".join(list(filter(lambda x: x != str(current_user.id), dlg.members.split(";"))))
+        dlg.members = members
         db_sess.commit()
-        dlg.file = f"dialog{dlg.id}.dlg"
+        return redirect(f"/messages")
+    except Exception:
+        return redirect("/messages")
+
+
+# функция добавляющая участника в беседу
+@app.route("/messages/add_member/<int:dialog_id>/<int:user_id>", methods=["GET", "POST"])
+@login_required
+def add_member(dialog_id, user_id):
+    try:
+        db_sess = db_session.create_session()
+        dlg = db_sess.query(Dialog).filter(Dialog.id == dialog_id).first()
+        dlg.members += ";" + str(user_id)
         db_sess.commit()
-        f = open(f"{DIALOGS_DIR}{dlg.file}", "w", encoding="utf-8")
-        f.close()
-        return redirect(f"/dialog/{dlg.id}")
+    except:
+        pass
+    return redirect("/messages")
 
 
 # функция открывающая страницу с запросами в друзья
 @app.route("/friends/requests", methods=["GET", "POST"])
 @login_required
 def requests():
-    update_time()
-    db_sess = db_session.create_session()
-    message = ""
-    req = []
-    rq = list(filter(lambda x: x != " " and x != "", current_user.requests.split(";")))
     try:
-        req = list(map(lambda x: db_sess.query(User).filter(User.id == int(x)).first(), rq))
+        update_time()
+        db_sess = db_session.create_session()
+        message = ""
+        req = []
+        rq = list(filter(lambda x: x != " " and x != "", current_user.requests.split(";")))
+        try:
+            req = list(map(lambda x: db_sess.query(User).filter(User.id == int(x)).first(), rq))
+        except Exception:
+            message = "No requests"
+        return render_template("requests.html",
+                               title="Friend requests",
+                               message=message,
+                               req=req)
     except Exception:
-        message = "No requests"
-    return render_template("requests.html", title="Friend requests", message=message, req=req)
+        return redirect("/friends")
 
 
 # функция добавляющая друга
 @app.route("/addfriend/<int:user_id>")
 @login_required
 def add_friend(user_id):
-    update_time()
-    req = current_user.requests.split(";")
-    if str(user_id) in req:
-        del req[req.index(str(user_id))]
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.id == user_id).first()
-        if user.friends:
-            user.friends = user.friends + f";{current_user.id}"
-        else:
-            user.friends = f"{current_user.id}"
-        cu = db_sess.query(User).filter(User.id == current_user.id).first()
-        if cu.friends:
-            cu.friends = cu.friends + f";{user_id}"
-        else:
-            cu.friends = f"{user_id}"
+    try:
+        update_time()
+        req = current_user.requests.split(";")
+        if str(user_id) in req:
+            del req[req.index(str(user_id))]
+            db_sess = db_session.create_session()
+            user = db_sess.query(User).filter(User.id == user_id).first()
+            if user.friends:
+                user.friends = user.friends + f";{current_user.id}"
+            else:
+                user.friends = f"{current_user.id}"
+            cu = db_sess.query(User).filter(User.id == current_user.id).first()
+            if cu.friends:
+                cu.friends = cu.friends + f";{user_id}"
+            else:
+                cu.friends = f"{user_id}"
+                db_sess.commit()
+            cu.requests = ";".join(req)
             db_sess.commit()
-        cu.requests = ";".join(req)
-        db_sess.commit()
+    except Exception:
+        pass
     return redirect("/friends/requests")
 
 
@@ -380,15 +509,18 @@ def add_friend(user_id):
 @app.route("/friends/makerequest/<int:user_id>")
 @login_required
 def make_request(user_id):
-    update_time()
-    db_sess = db_session.create_session()
-    user = db_sess.query(User).filter(User.id == user_id).first()
-    req = user.requests.split(";")
-    if str(current_user.id) not in user.requests:
-        req.append(f"{current_user.id}")
-    user.requests = ";".join(req)
-    db_sess.commit()
-    return redirect("/friends/search")
+    try:
+        update_time()
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == user_id).first()
+        req = user.requests.split(";")
+        if str(current_user.id) not in user.requests:
+            req.append(f"{current_user.id}")
+        user.requests = ";".join(req)
+        db_sess.commit()
+        return redirect("/friends/search")
+    except Exception:
+        return redirect("/friends/search")
 
 
 # функция удаления пользователя из списка друзей
@@ -476,7 +608,7 @@ def new_password(shortname):
 
 # функция смены пароля ( ввод старого пароля для подтверждения )
 # далее переадресация на 3 этап воссстановления пароля
-@app.route("/settings/change-password",  methods=["POST", "GET"])
+@app.route("/settings/change-password", methods=["POST", "GET"])
 @login_required
 def change_password():
     db_sess = db_session.create_session()
@@ -491,7 +623,10 @@ def change_password():
                 alert = "Wrong password!"
         else:
             alert = "Enter your password."
-    return render_template("change_password.html", form=form, title="Change password", alert=alert)
+    return render_template("change_password.html",
+                           form=form,
+                           title="Change password",
+                           alert=alert)
 
 
 # функция восстановления shortname
@@ -527,17 +662,12 @@ def forgot_shortname():
 def success(mes_code):
     message = ""
     if mes_code == 1:
-        message = "Ожидайте от нас письма с вашим shortname. Скорее всего оно уже пришло."
+        message = "Expect an email letter with shortname( login) . Check your email."
     elif mes_code == 2:
-        message = "Вы зарегистрированы в Hestia!"
+        message = "You are registered in Hestia!"
     elif mes_code == 3:
-        message = "Данные аккаунта обновлены."
+        message = "Account details changed."
     return render_template("success.html", message=message)
-
-
-@app.route("/da")
-def su():
-    return render_template("testbase.html")
 
 
 if __name__ == "__main__":

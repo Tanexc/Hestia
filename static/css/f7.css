@@ -4,6 +4,10 @@
 body {
     height: 100%;
 }
+html {
+    height: auto;
+
+}
 header {
     position: relative;
     height: 130px;
@@ -233,7 +237,7 @@ div.scrollspy {
 .new-dialog-btn{
 	border-radius: 10px;
 	border: none;
-	width: 100px;
+	width: 150px;
 	height: 30px;
 	margin-bottom: 5px;
     background-color: #50c878;
@@ -330,4 +334,68 @@ div.scrollspy {
 }
 #base-navbar:active {
 	box-shadow: 0em 0.5em 10px #2222;
+}
+#errors {
+    text-color: #000000;
+}
+#group-chat {
+    background: #dbdbdb;
+}
+#group {
+    background-color: #009900;
+}
+#group:hover {
+    background-color: #50c878;
+}
+.alert p {
+	color: #009900;
+}
+.dropdown-toggle-1::after {
+    display: none;
+}
+#dropdownMenuButton2 {
+	background-color: #0000;
+	border: none;
+	color: #000000;
+    outline: none;
+    margin-left: 5px;
+    min-width: 50px;
+    min-height: 50px;
+    max-height: 50px;
+}
+#dropdownMenuButton2:hover {
+	min-height: 50px;
+	max-height: 50px;
+	box-shadow: 0em 0.5em 10px #5555;
+}
+#dialog-settings {
+	border: none;
+}
+#dropdownMenuButton2:focus {
+	outline: none;
+	border: none;
+	box-shadow: 0em 0.5em 10px #2222;
+}
+#dropdownMenuButton2:active {
+	outline: none;
+	border: none;
+	box-shadow: 0.5em 0.5em 10px #2222;
+}
+#settings-p {
+	color: #000000;
+}
+.badge {
+    background: #009900;
+}
+.custom-p {
+	color: #000000;
+}
+#dialog-object {
+	height: 50px;
+}
+.pretty-a:hover {
+    color: #777777;
+}
+.group-chat {
+    background: #dddddd;
 }

@@ -2,6 +2,12 @@
 
 {% block friendscontent %}
     <div class="container justify-content-center" id="dialog">
+        <form method="post">
+        <div class="container-lg">
+              <div class="row justify-content-md-center">
+                  <div class="col-1"><button type="submit" class="new-dialog-btn" id="group">Invite</button></div>
+              </div>
+        </div>
         <div class="row row-cols-auto justify-content-md-center" id="member-line">
           <div class="col-5 justify-content-center"><h4>Name Surname</h4></div>
           <div class="col-5 justify-content-center"><h4>Shortname</h4></div>
@@ -10,6 +16,13 @@
             <ul class="list-group list-group-flush">
                 {% for i in friends %}
                     <div class="list-group-item list-group-item-action" aria-current="true">
+                        {% if i[2] != "" %}
+                        <div class="form-check" id="check-invite">
+                          <input class="form-check-input" type="checkbox" value="no" id="flexCheckDefault" name="invite{{i[2]}}">
+                          <label class="form-check-label" for="flexCheckDefault">
+                          </label>
+                        </div>
+                        {% endif %}
                         <div class="d-flex w-100 justify-content-between">
                             <div class="container-lg">
                               <div class="row row-cols-auto justify-content-md-center">
@@ -34,5 +47,6 @@
                 {% endfor %}
             </ul>
         </div>
+        </form>
     </div>
 {% endblock %}

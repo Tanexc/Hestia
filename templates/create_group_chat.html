@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="form">
+        <form action="" method="post" class="shadow form" novalidate>
+            {{ form.csrf_token }}
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                <h2>New Group Chat</h2>
+            </div>
+                <div class="mb-3">
+                    {{ form.label.label }}<br>
+                    {{ form.label(class="form-control", id="form-field") }}<br>
+                    {% for error in form.label.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <p>{{error}}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        </form>
+    </div>
+{% endblock %}

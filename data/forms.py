@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, SubmitField
 from wtforms import StringField, PasswordField
 from wtforms import IntegerField, TextAreaField
+from random import choice as chs
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, EqualTo, Email, Length, ValidationError
 
@@ -25,19 +26,37 @@ illegal_passwords_parts = [
 ]
 
 
+# функция генерирующая код для завершения регистрации
+def generate_code():
+    code = str(chs(range(10)))\
+           + str(chs(range(10)))\
+           + str(chs(range(10)))\
+           + str(chs(range(10)))\
+           + str(chs(range(10)))\
+           + str(chs(range(10)))
+    return code
+
+
+# проверка валидности пароля и логина при регистрации
 def Shortname_validate(form, field):
     if len(list(illegal_symbols & set(list(field.data)))) != 0:
         raise ValidationError("Use only letters, numbers and symbols '_',  '-'")
+
+
+def Label_validate(form, field):
+    if "_" in field.data:
+        raise ValidationError("Don't use '_' in label")
 
 
 def Password_validate(form, field):
     password = field.data
     if len(password) < 8:
         raise ValidationError("Password must be at least 8 characters long")
-    elif password.isalpha() and (password.islower() or password.isupper()) or password.isdigit():
+    elif password.isalpha() or password.isdigit():
         raise ValidationError("Use upper and lower letters, digits and other symbols")
-    elif len(list(filter(lambda x: x in password.lower(), illegal_passwords_parts))) != 0:
-        raise ValidationError("Simple password")
+    for i in illegal_passwords_parts:
+        if i in password:
+            raise ValidationError("Don't use simple sequence like 1234, qwerty, password and other")
 
 
 class RegisterForm(FlaskForm):
@@ -101,3 +120,8 @@ class ThirdRecPswForm(FlaskForm):
 class ChangePswForm(FlaskForm):
     password = StringField("Password", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+class CreateChatForm(FlaskForm):
+    label = StringField("Label", validators=[Label_validate, DataRequired()])
+    submit = SubmitField("Invite friends")
