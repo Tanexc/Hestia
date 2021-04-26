@@ -42,7 +42,8 @@ api.add_resource(news_resource.NewsResource, "/api/news/<int:news_id>")
 # функция запуска приложения
 def main():
     db_session.global_init("db/hestia_main.db")
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
 
 
 # функция получения последнего сообщения из диалога
