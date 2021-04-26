@@ -19,14 +19,12 @@ from flask_restful import reqparse, abort, Api, Resource
 
 MESSAGE_SPECIAL_SYMBOL_0 = "&#&/<-sndr/*/msg->/&#&"  # символ разделения отправителя от текста сообщения
 MESSAGE_SPECIAL_SYMBOL_1 = "&~&/end/*/mes/&~&"  # символ разделения сообщений
-MESSAGE_SPECIAL_SYMBOL_2 = "&?&/unread/&?&"  # символ пометки сообщения как не прочитанного
 DIALOGS_DIR = "db/dialogs/"  # расположение диалогов
 CODE = generate_code()  # заранее генерируем код( при использовании он меняется )
 
 # Инициализация приложения
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "super_secret_key_QWav-43sd-svs3-001a"
-app.config["SECRET_KEY"] = "super_secret_key_QWav43sd-svs3-001a"
 app.config["UPLOAD_FOLDER"] = "static/user_images/"
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -193,7 +191,7 @@ def logout():
 @login_required
 def messages():
     try:
-        avatar = f"/static/user_images/anonym.jpg"
+        avatar = f""
         db_sess = db_session.create_session()
         update_time()
         dialogs = db_sess.query(Dialog).filter(or_(Dialog.members.like(f"%;{current_user.id}"),
@@ -243,17 +241,22 @@ def dialog(dlg_id):
         dlg_mes = {}
         db_sess = db_session.create_session()
         dialog = db_sess.query(Dialog).filter(Dialog.id == dlg_id).first()
-        member = int(dialog.members.split(";")[0])
-        if len(dialog.members.split(";")) != 1:
+        if dialog.label == "_":
             member = int(dialog.members.split(";")[0])
-            last_seen = ""
             if member == current_user.id:
                 member = int(dialog.members.split(";")[1])
-                user = db_sess.query(User).filter(User.id == member).first()
-                member = user.name + " " + user.surname
-                last_seen = f"last action at {str(user.last_seen)[:-10]}"
+            user = db_sess.query(User).filter(User.id == member).first()
+            if user.avatar is not None:
+                avatar = f"/static/user_images/{user.shortname}/{user.avatar}"
+            else:
+                avatar = f"/static/user_images/anonym.jpg"
+            member = user.name + " " + user.surname
+            title = f"Dialog with {member}"
+            last_seen = f"last action at {str(user.last_seen)[:-10]}"
         else:
+            title = f"Chat {dialog.label}"
             member = dialog.label
+            avatar = ""
             last_seen = ""
         dlg_file = dialog.file
         if request.method == "POST":
@@ -270,14 +273,23 @@ def dialog(dlg_id):
                 for num, i in enumerate(m):
                     text = i.split(MESSAGE_SPECIAL_SYMBOL_0)[1]
                     user = int(i.split(MESSAGE_SPECIAL_SYMBOL_0)[0])
-                    dlg_mes[num] = {"user": user, "text": text}
+                    usr = db_sess.query(User).filter(User.id == user).first()
+                    if usr.avatar is None:
+                        member_avatar = f"/static/user_images/anonym.jpg"
+                    else:
+                        member_avatar = f"/static/user_images/{usr.shortname}/{usr.avatar}"
+                    dlg_mes[num] = {"user": user,
+                                    "text": text,
+                                    "avatar": member_avatar,
+                                    "name": usr.name}
             except:
                 pass
         return render_template("dialog.html", messages=dlg_mes,
                                member=member,
                                form=form,
-                               title=f"Dialog with {member}",
-                               last_seen=last_seen)
+                               title=title,
+                               last_seen=last_seen,
+                               avatar=avatar)
     except Exception as e:
         print(e)
         return redirect("/messages")

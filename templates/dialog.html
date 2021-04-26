@@ -3,6 +3,9 @@
 {% block content %}
     <div class="container justify-content-center" id="dialog">
         <div class="row row-cols-auto justify-content-center" id="member-line">
+            {% if avatar != "" %}
+                <div class="card" id="member-image"><img src={{avatar}}></div>
+            {% endif %}
             <div class="col"><h3 id="mem"><a class="nav-btn" href="/profile/{{shortname}}">{{ member }}</a></h3><h5>{{last_seen}}</h5></div>
         </div>
         <div data-bs-spy="scroll" data-bs-target="#navbar-example" data-bs-offset="0" class="scrollspy" id="scrl" tabindex="0">
@@ -11,12 +14,17 @@
             </div>
             {% for i in messages %}
                 {% if messages[i]["user"] == current_user.id %}
+                    <p class="custom-p">{{ messages[i]["name"] }}</p>
                     <div class="d-flex justify-content-end">
                       <p class="mb-2">{{ messages[i]["text"] }}</p>
+                      <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
                     </div>
                 {% else %}
-                    <div class="d-flex justify-content-start">
+                      <p class="custom-p">{{ messages[i]["name"] }}</p>
+                      <div class="d-flex justify-content-start">
+                      <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
                       <p class="mb-2">{{ messages[i]["text"] }}</p>
+
                     </div>
                 {% endif %}
             {% endfor %}

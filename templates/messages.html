@@ -24,9 +24,11 @@
                           </ul>
                       </div>
                       <a class="list-group-item d-flex justify-content-between align-items-center pretty-a" href="/dialog/{{i['id']}}">
-                        <div class="card" id="member-image">
-                            <img src={{avatar}}>
-                        </div>
+                        {% if avatar != "" %}
+                            <div class="card" id="member-image">
+                                <img src={{avatar}}>
+                            </div>
+                          {% endif %}
                         <h5 class="mb-1">{{ i['member'] }}</h5>
                         <p class="custom-p">{{i["last_message"]}}</p>
                         <span class="badge bg rounded-pill float-end">Last message was at {{i["updated"]}}</span>
