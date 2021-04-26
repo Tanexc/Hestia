@@ -700,7 +700,7 @@ def success(mes_code):
         message = "You are registered in Hestia!"
     elif mes_code == 3:
         message = "Account details changed."
-    return render_template("success.html", message=message)
+    return render_template("success.html", message=message, title="Success")
 
 
 @app.route("/profile/<shortname>", methods=["POST", "GET"])
@@ -772,7 +772,7 @@ def profile_friends(shortname):
 def news():
     db_sess = db_session.create_session()
     news = db_sess.query(News).filter(News.is_private != True)
-    return render_template("news.html", news=news)
+    return render_template("news.html", news=news, title="Posts")
 
 
 @app.route('/add_news',  methods=['GET', 'POST'])
