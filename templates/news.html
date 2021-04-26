@@ -26,7 +26,7 @@
                 {% if current_user.is_authenticated and current_user == item.user %}
                     <ul class="nav nav-pills card-header-pills row row-cols-auto">
                         <li class="nav-item">
-                            <div class="col"><a href="/edit_news/{{ item.id }}" id="add-btn">Add</a><div>
+                            <div class="col"><a href="/edit_news/{{ item.id }}" id="add-btn">Edit</a><div>
                         </li>
                         <li class="nav-item">
                             <div class="col"><a href="/del_news/{{ item.id }}" id="del-btn">Delete</a></div>
@@ -37,7 +37,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{item.title}}</h5>
                 <div class="card-text">{{item.content}}</div>
-                {% if item.photo_name != '0' %}
+                {% if item.photo_name != 0 %}
                 <div class="container" style="width: 30rem;">
                     <div id="carouselExampleControls{{item.id}}"
                          class="carousel slide" data-bs-ride="carousel">

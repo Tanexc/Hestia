@@ -4,7 +4,7 @@ from random import choice as chs
 from sqlalchemy import or_
 from werkzeug.security import generate_password_hash
 from flask import Flask, render_template, redirect, request
-from data import db_session, user_resource, dialog_resource
+from data import db_session, user_resource, dialog_resource, news_resource
 from flask_login import LoginManager, login_required, logout_user
 from flask_login import login_user, current_user
 from data.dialog import Dialog
@@ -34,7 +34,9 @@ api = Api(app)
 api.add_resource(user_resource.UsersListResource, "/api/users")
 api.add_resource(user_resource.UsersResource, "/api/users/<int:user_id>")
 api.add_resource(dialog_resource.DialogsListResource, "/api/dialogs")
-api.add_resource(dialog_resource.DialogsResource, "/api/users/<int:dialog_id>")
+api.add_resource(dialog_resource.DialogsResource, "/api/dialogs/<int:dialog_id>")
+api.add_resource(news_resource.NewsListResource, "/api/news")
+api.add_resource(news_resource.NewsResource, "/api/news/<int:news_id>")
 
 
 # функция запуска приложения
