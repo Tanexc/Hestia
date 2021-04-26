@@ -15,17 +15,39 @@
             {% for i in messages %}
                 {% if messages[i]["user"] == current_user.id %}
                     <div class="d-flex justify-content-end">
-                      <p class="mb-2">{{ messages[i]["text"] }}</p>
-                      <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
-                      <p class="custom-p">{{ messages[i]["name"] }}</p>
+                          <div class="container">
+                              <div class="row justify-content-md-end">
+                                <div class="col-md-auto" style="max-height: 31px;">
+                                    <p class="custom-p">{{ messages[i]["name"] }}</p>
+                                </div>
+                              </div>
+                              <div class="row justify-content-md-end">
+                                <div class="col-auto" style="width: 50%;">
+                                  <p class="mb-100">{{ messages[i]["text"] }}</p>
+                                </div>
+                                <div class="col-md-auto" style="max-height: 31px;max-width: 31px;padding: 0px;">
+                                    <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
+                                </div>
+                              </div>
+                            </div>
                     </div>
                 {% else %}
-
                       <div class="d-flex justify-content-start">
-                      <p class="custom-p">{{ messages[i]["name"] }}</p><br>
-                      <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
-                      <p class="mb-2">{{ messages[i]["text"] }}</p>
-
+                          <div class="container">
+                              <div class="row justify-content-md-start">
+                                <div class="col-md-auto" style="max-height: 31px;">
+                                    <p class="custom-p">{{ messages[i]["name"] }}</p>
+                                </div>
+                              </div>
+                              <div class="row justify-content-md-start">
+                                <div class="col-md-auto" style="max-height: 31px;max-width: 31px;padding: 0px;">
+                                    <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
+                                </div>
+                                <div class="col-auto" style="width: 50%;">
+                                  <p class="mb-100">{{ messages[i]["text"] }}</p>
+                                </div>
+                              </div>
+                            </div>
                     </div>
                 {% endif %}
             {% endfor %}

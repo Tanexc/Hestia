@@ -16,7 +16,7 @@
                                 {% if i.avatar != None %}
                                 <img id="member-image-2" class="rounded" src="{{url_for('static', filename='user_images/' + i.shortname + '/' + i.avatar)}}">
                                 {% else %}
-                                <img class="rounded" src="/static/user_images/anonym.jpg">
+                                <img class="rounded" id="member-image-2" src="/static/user_images/anonym.jpg">
                                 {% endif %}
                                 <div class="col-5 justify-content-center"><a class="custom-a" href="/profile/{{i[1]}}">{{i.name}} {{i.surname}}</a></div>
                                 <div class="col-3 justify-content-center"><a class="custom-a" href="/profile/{{i[1]}}">{{i.shortname}}</a></div>

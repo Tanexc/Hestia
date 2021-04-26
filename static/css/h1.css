@@ -130,6 +130,13 @@ p.mb-2 {
     width: 45%;
     color: #000000;
 }
+p.mb-100 {
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 0px 0px 0px 3px;
+    width: 100%;
+    color: #000000;
+}
 div.scrollspy {
 	position: relative;
 	margin-left: auto;
@@ -518,6 +525,7 @@ div.scrollspy {
     min-width: 30px;
     max-height: 30px;
     min-height: 30px;
+    border-radius: 10px;
 
 }
 #dropdownMenuButton3 {

@@ -61,8 +61,12 @@ def get_last_message(dlg: Dialog):
 
 # функция проверки принадлежности пользователя к списку друзей или списку запросов
 def check_requests_friend(user):
-    if str(current_user.id) in user.requests:
+    db_sess = db_session.create_session()
+    cur_user = db_sess.query(User).filter(User.id == current_user.id).first()
+    if str(current_user.id) in user.requests.split(";"):
         return -1
+    elif str(user.id) in cur_user.requests.split(";"):
+        return -2
     elif str(current_user.id) in user.friends or str(user.id) in current_user.requests:
         return 0
     else:
@@ -720,6 +724,7 @@ def profile(shortname):
     else:
         avatar = f"/static/user_images/anonym.jpg"
     news = db_sess.query(News).filter((News.user_shortname == user.shortname))
+    images = os.listdir(f"static/user_images/{user.shortname}")
     if request.method == "POST":
         image = request.files["upload"]
         path = os.path.join(app.config["UPLOAD_FOLDER"] + f"{current_user.shortname}",
@@ -734,7 +739,7 @@ def profile(shortname):
             avatar = f"/static/user_images/anonym.jpg"
     return render_template("me.html", user=user, date=date,
                            friends=friends1, len_friends=len(friends1),
-                           avatar=avatar, news=news, title="Profile")
+                           avatar=avatar, news=news, title="Profile", images=images)
 
 
 @app.route("/settings/change-profile", methods=["POST", "GET"])
