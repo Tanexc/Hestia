@@ -4,7 +4,7 @@
     <div class="container justify-content-center" id="dialog">
         <div class="row row-cols-auto justify-content-center" id="member-line">
             {% if avatar != "" %}
-                <div class="card" id="member-image"><img src={{avatar}}></div>
+                <img src={{avatar}} class="rounded" id="member-image-3">
             {% endif %}
             <div class="col"><h3 id="mem"><a class="nav-btn" href="/profile/{{shortname}}">{{ member }}</a></h3><h5>{{last_seen}}</h5></div>
         </div>
@@ -14,14 +14,15 @@
             </div>
             {% for i in messages %}
                 {% if messages[i]["user"] == current_user.id %}
-                    <p class="custom-p">{{ messages[i]["name"] }}</p>
                     <div class="d-flex justify-content-end">
                       <p class="mb-2">{{ messages[i]["text"] }}</p>
                       <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
+                      <p class="custom-p">{{ messages[i]["name"] }}</p>
                     </div>
                 {% else %}
-                      <p class="custom-p">{{ messages[i]["name"] }}</p>
+
                       <div class="d-flex justify-content-start">
+                      <p class="custom-p">{{ messages[i]["name"] }}</p><br>
                       <img src ="{{ messages[i]['avatar'] }}" id="member_avatar">
                       <p class="mb-2">{{ messages[i]["text"] }}</p>
 

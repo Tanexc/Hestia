@@ -168,6 +168,10 @@ def login():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.shortname == form.shortname.data).first()
+        if user is None:
+            return render_template('login.html',
+                                   message="Incorrect login or password",
+                                   form=form, title='Authorization')
         if user and user.check_password(form.password.data) and user.confirmed:
             login_user(user, remember=form.remember_me.data)
             update_time()
@@ -314,7 +318,8 @@ def friends():
                                 + " "
                                 + db_sess.query(User).filter(User.id == int(x)).first().surname,
                                 db_sess.query(User).filter(User.id == int(x)).first().shortname,
-                                db_sess.query(User).filter(User.id == int(x)).first().id],
+                                db_sess.query(User).filter(User.id == int(x)).first().id,
+                                db_sess.query(User).filter(User.id == int(x)).first().avatar],
                                friends))
         except Exception:
             pass
@@ -345,20 +350,23 @@ def search():
             searched_users = list(map(lambda x: [x.name + " " + x.surname,
                                                  x.shortname,
                                                  x.id,
-                                                 check_requests_friend(x)],
+                                                 check_requests_friend(x),
+                                                 x.avatar],
                                       searched_users))
         else:
             searched_users = db_sess.query(User).filter().all()
             searched_users = list(map(lambda x: [x.name + " " + x.surname,
                                                  x.shortname,
                                                  x.id,
-                                                 check_requests_friend(x)],
+                                                 check_requests_friend(x),
+                                                 x.avatar],
                                       searched_users))
         return render_template("search_friends.html",
                                title="Searching Friends",
                                searched_users=searched_users,
                                form=form)
-    except Exception:
+    except Exception as e:
+        print(e)
         return redirect("/friends")
 
 
@@ -755,6 +763,7 @@ def profile_friends(shortname):
     friends1 = []
     for i in friends:
         friends1.append(db_sess.query(User).filter(User.id == int(i)).first())
+
     return render_template("profile_friends.html", friends=friends1, title="All friends")
 
 

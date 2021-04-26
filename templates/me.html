@@ -4,21 +4,27 @@
 <div class="container justify-content-end" id="profile-box">
     <div class="container">
         <div class="row">
-        <div class="col-sm-5">
-            {% if user.shortname == current_user.shortname %}
-                <div class="card" id="avatar1">
-                    <img src={{avatar}}>
-                    <form class="formp" method="post" enctype=multipart/form-data>
-                        <input type="file" accept="image/jpeg,image/png,image/bmp" value="Загрузить" name="upload">
-                        <button type="submit" class="btn btn-primary">Send</button>
-                    </form>
-                </div>
-            {% else %}
-                <div class="card" id="avatar2">
-                <img src={{avatar}}>
-                </div>
-            {% endif %}
-        </div>
+        {% if user.shortname == current_user.shortname %}
+            <div class="card col-sm-5" id="avatar1">
+                <img src={{avatar}} class="rounded" style="max-height: 15rem;">
+
+                <form class="formp" method="post" enctype=multipart/form-data>
+                    <div class="dropdown dropdown float-start" id="dialog-settings">
+                          <button class="btn btn-secondary dropdown-toggle-1" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
+                              <p id="settings-p">New Avatar</p>
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton3" id="avatar-settings">
+                            <li><input type="file" accept="image/jpeg,image/png,image/bmp" value="Загрузить" name="upload"></li>
+                            <li><button type="submit" class="btn btn-primary">Send</button></li>
+                          </ul>
+                     </div>
+                </form>
+            </div>
+        {% else %}
+            <div class="card col-sm-5" id="avatar2">
+            <img src={{avatar}} class="rounded">
+            </div>
+        {% endif %}
         <div class="info col-sm">
             <h1>{{user.name}} {{user.surname}}</h1><br>
             <h4>About me</h4>
@@ -30,11 +36,6 @@
         </div>
       </div>
     </div>
-    <div class="container-sm" id="avatar-div" align="left">
-
-
-    </div>
-
     <div class="info">
         <h4>Friends</h4>
         <ul>
@@ -55,7 +56,7 @@
     <div class="container-lg">
         <div class="row justify-content-md-center">
             <h1 align="center">Posts</h1>
-            {% if current_user.is_authenticated %}
+            {% if current_user.shortname == user.shortname %}
                 <div align="center">
                     <button class="new-dialog-btn"><a href="/add_news">New post</a></button>
                 </div>
@@ -88,7 +89,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{item.title}}</h5>
                 <div class="card-text mb-3">{{item.content}}</div>
-                {% if item.photo_name != 0 %}
+                {% if item.photo_name != '0' %}
                     <div class="container" style="width: 30rem;">
                         <div id="carouselExampleControls{{item.id}}"
                              class="carousel slide" data-bs-ride="carousel">

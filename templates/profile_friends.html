@@ -10,11 +10,14 @@
     {% for i in friends %}
         <div class="list-group">
           <a href="/profile/{{i.shortname}}" class="list-group-item list-group-item-action" aria-current="true">
-            <div class="d-flex w-100 justify-content-between">
-              <h5 class="mb-1">{{i.name}} {{i.surname}}</h5>
-            </div>
-            <div class="container-sm justify-content-center">
-              <p class="mb-4">{{i.address}}</p>
+
+            <div class="d-flex w-100 justify-content-start">
+             {% if i.avatar != None %}
+             <img class="rounded" id="member-image-1" src="{{url_for('static', filename='user_images/' + i.shortname + '/' + i.avatar)}}">
+             {% else %}
+             <img class="rounded" id="member-image-1" src="/static/user_images/anonym.jpg">
+             {% endif %}
+              <h5 class="mb-1"><br>{{i.name}} {{i.surname}}</h5>
             </div>
           </a>
         </div>
