@@ -16,6 +16,7 @@ from data.users import User
 from data.news import News
 from post_service.post_srv import send_mail
 from flask_restful import reqparse, abort, Api, Resource
+import flask_ngrok
 
 MESSAGE_SPECIAL_SYMBOL_0 = "&#&/<-sndr/*/msg->/&#&"  # символ разделения отправителя от текста сообщения
 MESSAGE_SPECIAL_SYMBOL_1 = "&~&/end/*/mes/&~&"  # символ разделения сообщений
@@ -28,22 +29,23 @@ app.config["SECRET_KEY"] = "super_secret_key_QWav-43sd-svs3-001a"
 app.config["UPLOAD_FOLDER"] = "static/user_images/"
 login_manager = LoginManager()
 login_manager.init_app(app)
+flask_ngrok.run_with_ngrok(app)
 
 # API приложения
 api = Api(app)
-api.add_resource(user_resource.UsersListResource, "/api/users")
-api.add_resource(user_resource.UsersResource, "/api/users/<int:user_id>")
-api.add_resource(dialog_resource.DialogsListResource, "/api/dialogs")
-api.add_resource(dialog_resource.DialogsResource, "/api/dialogs/<int:dialog_id>")
-api.add_resource(news_resource.NewsListResource, "/api/news")
-api.add_resource(news_resource.NewsResource, "/api/news/<int:news_id>")
+api.add_resource(user_resource.UsersListResource, "/api/hestia-network-api/users")
+api.add_resource(user_resource.UsersResource, "/api/hestia-network-api/users/<int:user_id>")
+api.add_resource(dialog_resource.DialogsListResource, "/api/hestia-network-api/dialogs")
+api.add_resource(dialog_resource.DialogsResource, "/api/hestia-network-api/dialogs/<int:dialog_id>")
+api.add_resource(news_resource.NewsListResource, "/api/hestia-network-api/news")
+api.add_resource(news_resource.NewsResource, "/api/hestia-network-api/news/<int:news_id>")
 
 
 # функция запуска приложения
 def main():
     db_session.global_init("db/hestia_main.db")
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run()
 
 
 # функция получения последнего сообщения из диалога
@@ -224,19 +226,17 @@ def messages():
                     avatar = f"/static/user_images/anonym.jpg"
                 label = mem_obj.name + " " + mem_obj.surname
             last_message = get_last_message(dialog)
-
             dialog_objects.append({"member": label,
                                    "id": dialog.id,
                                    "updated": dialog.modified_date,
                                    "last_message": last_message,
-                                   "members_cnt": len(dialog.members.split(";"))
-                                   })
+                                   "members_cnt": len(dialog.members.split(";")),
+                                   "avatar": avatar})
 
             dialog_objects.sort(key=lambda x: str(x["last_message"]), reverse=False)
         return render_template("messages.html",
                                dialogs=dialog_objects,
-                               title="Messages",
-                               avatar=avatar)
+                               title="Messages")
     except Exception as e:
         print(e)
         return redirect("/")
