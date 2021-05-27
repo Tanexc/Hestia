@@ -18,9 +18,10 @@ class News(SqlAlchemyBase, UserMixin, SerializerMixin):
                              default=datetime.datetime.now().date())
     time = sqlalchemy.Column(sqlalchemy.Time,
                              default=datetime.datetime.now().time())
-    is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
 
     user_shortname = sqlalchemy.Column(sqlalchemy.String,
                                 sqlalchemy.ForeignKey("users.shortname"))
+    user = orm.relation('User')
     photo_name = sqlalchemy.Column(sqlalchemy.String, default="0")
     user = orm.relation('User')
